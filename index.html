@@ -1,0 +1,1266 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="theme-color" content="#fff8ec">
+<link rel="manifest" href="manifest.webmanifest">
+<link rel="icon" type="image/png" sizes="192x192" href="icons/icon-192.png">
+<link rel="apple-touch-icon" href="icons/apple-touch-icon.png">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-title" content="Deutsch A1">
+<meta name="apple-mobile-web-app-status-bar-style" content="default">
+<title>Deutsch A1 Trainer</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Nunito:wght@600;700;800;900&display=swap" rel="stylesheet">
+<style>
+:root{
+  /* Mundo único y claro: papel cálido, botones "de goma" con sombra inferior, colores de artículo del libro (der azul, das verde, die rojo) */
+  --bg:#fff8ec;
+  --card:#ffffff;
+  --ink:#2b2a33;
+  --muted:#7d7a86;
+  --line:#ece4d4;
+  --accent:#ff7a1a;
+  --accent-d:#d95f00;
+  --der:#1f6feb; --der-d:#1650ad; --der-l:#e3eeff;
+  --das:#13a05a; --das-d:#0c7440; --das-l:#ddf6e8;
+  --die:#e5484d; --die-d:#b3282d; --die-l:#ffe3e3;
+  --ok:#13a05a; --ok-l:#d9f7e5; --bad:#e5484d; --bad-l:#ffe1e1;
+  --gold:#ffc23d;
+  --font:'Nunito', ui-rounded, 'SF Pro Rounded', system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif;
+  color-scheme: light;
+}
+*{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+[hidden]{display:none!important}
+html,body{height:100%;margin:0}
+body{background:var(--bg);color:var(--ink);font-family:var(--font);font-weight:700;-webkit-font-smoothing:antialiased}
+button{font-family:inherit;font-weight:800;cursor:pointer;color:inherit}
+button:focus-visible,input:focus-visible{outline:3px solid var(--der);outline-offset:2px}
+.app{max-width:540px;margin:0 auto;min-height:100%;display:flex;flex-direction:column;padding-bottom:calc(84px + env(safe-area-inset-bottom))}
+/* top bar */
+.top{position:sticky;top:0;z-index:5;background:var(--bg);display:flex;align-items:center;gap:12px;padding:calc(10px + env(safe-area-inset-top)) 16px 10px;border-bottom:2px solid var(--line)}
+.brand{font-weight:900;font-size:20px;letter-spacing:-.3px;flex:1;display:flex;align-items:center;gap:8px}
+.flag{display:inline-flex;flex-direction:column;width:22px;height:16px;border-radius:4px;overflow:hidden}
+.flag i{flex:1}.flag i:nth-child(1){background:#222}.flag i:nth-child(2){background:#dd2b2b}.flag i:nth-child(3){background:#ffc23d}
+.stat{display:flex;align-items:center;gap:4px;font-weight:900;font-size:16px}
+.stat svg{width:22px;height:22px}
+.stat.fire{color:#ff8a00}.stat.xp{color:#c98d00}
+/* tabs */
+.tabs{position:fixed;left:0;right:0;bottom:0;z-index:6;background:#fff;border-top:2px solid var(--line);display:flex;justify-content:center;padding-bottom:env(safe-area-inset-bottom)}
+.tabs .in{max-width:540px;width:100%;display:flex}
+.tab{flex:1;background:none;border:0;padding:10px 4px 12px;display:flex;flex-direction:column;align-items:center;gap:3px;font-size:12px;color:var(--muted)}
+.tab svg{width:26px;height:26px}
+.tab.on{color:var(--accent)}
+main{flex:1;padding:16px}
+.view{display:none}.view.on{display:block}
+h2.sec{font-size:13px;text-transform:uppercase;letter-spacing:1.2px;color:var(--muted);margin:22px 4px 10px;font-weight:900}
+h2.sec:first-child{margin-top:4px}
+/* hero */
+.hero{background:linear-gradient(135deg,#fff 0%,#fff3df 100%);border:2px solid var(--line);border-radius:22px;padding:16px;display:grid;grid-template-columns:1fr auto;gap:12px;align-items:center}
+.hero h1{margin:0 0 4px;font-size:21px;font-weight:900;line-height:1.15;text-wrap:balance}
+.hero p{margin:0;color:var(--muted);font-size:14px;font-weight:700}
+.ring{width:64px;height:64px;position:relative}
+.ring svg{width:64px;height:64px;transform:rotate(-90deg)}
+.ring b{position:absolute;inset:0;display:grid;place-items:center;font-size:13px;font-weight:900;text-align:center;line-height:1.05}
+/* unit card */
+.unit{background:var(--card);border:2px solid var(--line);border-radius:20px;margin-bottom:12px;overflow:hidden}
+.unit .uh{display:flex;align-items:flex-start;gap:12px;padding:14px 14px 4px}
+.unit .badge{flex:0 0 auto;width:44px;height:44px;border-radius:14px;display:grid;place-items:center;color:#fff;font-weight:900;font-size:15px;box-shadow:0 4px 0 rgba(0,0,0,.18)}
+.unit h3{margin:0;font-size:17px;font-weight:900;line-height:1.2}
+.unit .d{margin:2px 0 0;color:var(--muted);font-size:13px;font-weight:700;line-height:1.35}
+.unit .lv{display:flex;align-items:center;gap:12px;padding:10px 14px 14px}
+.lvb{width:54px;height:54px;border-radius:50%;border:0;display:grid;place-items:center;font-size:18px;color:#fff;background:var(--c);box-shadow:0 5px 0 var(--cd);transition:transform .08s}
+.lvb:active{transform:translateY(4px);box-shadow:0 1px 0 var(--cd)}
+.lvb.done{background:var(--gold);box-shadow:0 5px 0 #d49a12;color:#5a3b00}
+.lvb svg{width:24px;height:24px}
+.lvlabel{font-size:11px;color:var(--muted);text-align:center;margin-top:6px;font-weight:800}
+.lvwrap{display:flex;flex-direction:column;align-items:center}
+.tipbtn{margin-left:auto;background:#fff;border:2px solid var(--line);border-radius:14px;padding:8px 12px;font-size:13px;color:var(--ink);box-shadow:0 3px 0 var(--line)}
+.prog{height:8px;background:var(--line);border-radius:6px;overflow:hidden;margin:0 14px 12px}
+.prog i{display:block;height:100%;background:var(--gold);border-radius:6px}
+/* practice cards */
+.pcard{width:100%;text-align:left;background:var(--card);border:2px solid var(--line);border-radius:20px;padding:16px;display:flex;gap:14px;align-items:center;margin-bottom:12px;box-shadow:0 4px 0 var(--line)}
+.pcard:active{transform:translateY(3px);box-shadow:0 1px 0 var(--line)}
+.pcard .ic{width:52px;height:52px;border-radius:16px;display:grid;place-items:center;flex:0 0 auto;color:#fff}
+.pcard .ic svg{width:28px;height:28px}
+.pcard h3{margin:0;font-size:17px;font-weight:900}
+.pcard p{margin:2px 0 0;color:var(--muted);font-size:13px;font-weight:700}
+.pcard .meta{margin-left:auto;font-size:12px;color:var(--muted);text-align:right;white-space:nowrap}
+/* dictionary */
+.search{width:100%;font:inherit;font-size:16px;padding:12px 14px;border:2px solid var(--line);border-radius:16px;background:#fff;color:var(--ink)}
+.chips{display:flex;gap:8px;flex-wrap:wrap;margin:10px 0 12px}
+.chip{border:2px solid var(--line);background:#fff;border-radius:999px;padding:6px 12px;font-size:13px}
+.chip.on{background:var(--ink);border-color:var(--ink);color:#fff}
+.legend{display:flex;gap:8px;margin-bottom:10px}
+.legend span{flex:1;text-align:center;border-radius:12px;padding:6px;font-size:13px;font-weight:900}
+.w{display:flex;align-items:center;gap:10px;background:#fff;border:2px solid var(--line);border-left-width:8px;border-radius:14px;padding:10px 12px;margin-bottom:8px;width:100%;text-align:left}
+.w.der{border-left-color:var(--der)}.w.das{border-left-color:var(--das)}.w.die{border-left-color:var(--die)}
+.w .a{font-weight:900;min-width:34px}
+.w.der .a{color:var(--der)}.w.das .a{color:var(--das)}.w.die .a{color:var(--die)}
+.w .n{font-size:16px;font-weight:900}
+.w .pl{font-size:12px;color:var(--muted);font-weight:700}
+.w .es{margin-left:auto;font-size:13px;color:var(--muted);text-align:right}
+.count{font-size:12px;color:var(--muted);margin:0 4px 8px}
+/* lesson overlay */
+.lesson{position:fixed;inset:0;z-index:20;background:#fff;display:none;flex-direction:column}
+.lesson.on{display:flex}
+.lt{max-width:540px;width:100%;margin:0 auto;display:flex;align-items:center;gap:12px;padding:calc(12px + env(safe-area-inset-top)) 16px 8px}
+.x{background:none;border:0;padding:4px;color:#b6b2be}
+.x svg{width:26px;height:26px}
+.bar{flex:1;height:16px;background:#eee8dc;border-radius:10px;overflow:hidden}
+.bar i{display:block;height:100%;width:0;background:var(--ok);border-radius:10px;transition:width .35s;box-shadow:inset 0 -4px 0 rgba(0,0,0,.12)}
+.hearts{display:flex;align-items:center;gap:4px;color:var(--die);font-weight:900}
+.hearts svg{width:24px;height:24px}
+.timer{font-weight:900;color:var(--accent);min-width:44px;text-align:right}
+.lbody{flex:1;overflow:auto;max-width:540px;width:100%;margin:0 auto;padding:10px 16px 20px}
+.qt{font-size:22px;font-weight:900;margin:8px 0 14px;line-height:1.2;text-wrap:balance}
+.qprompt{display:flex;align-items:center;gap:10px;margin-bottom:16px}
+.qprompt .bubble{border:2px solid var(--line);border-radius:16px;padding:12px 14px;font-size:19px;font-weight:800;line-height:1.35;flex:1}
+.spk{flex:0 0 auto;width:48px;height:48px;border-radius:14px;border:0;background:var(--der);color:#fff;box-shadow:0 4px 0 var(--der-d);display:grid;place-items:center}
+.spk svg{width:24px;height:24px}
+.spk.sm{width:36px;height:36px;border-radius:10px;box-shadow:0 3px 0 var(--der-d)}
+.spk.sm svg{width:18px;height:18px}
+.wordcard{text-align:center;border:2px solid var(--line);border-radius:22px;padding:30px 48px 20px;margin:4px 0 22px;position:relative}
+.wordcard .big.l{font-size:30px}.wordcard .big.xl{font-size:25px}
+.wordcard .big{font-size:38px;font-weight:900;letter-spacing:-.5px;word-break:break-word}
+.wordcard .sub{color:var(--muted);font-size:15px;margin-top:4px}
+.wordcard .spk{position:absolute;right:10px;top:10px}
+.wordcard.der{border-color:var(--der);background:var(--der-l)}.wordcard.das{border-color:var(--das);background:var(--das-l)}.wordcard.die{border-color:var(--die);background:var(--die-l)}
+.arts{display:grid;grid-template-columns:repeat(3,1fr);gap:12px}
+.ab{border:0;border-radius:18px;padding:20px 0;font-size:24px;color:#fff;transition:transform .08s,filter .15s}
+.ab.der{background:var(--der);box-shadow:0 6px 0 var(--der-d)}
+.ab.das{background:var(--das);box-shadow:0 6px 0 var(--das-d)}
+.ab.die{background:var(--die);box-shadow:0 6px 0 var(--die-d)}
+.ab:active{transform:translateY(5px);box-shadow:0 1px 0 rgba(0,0,0,.3)}
+.ab.sel{outline:4px solid var(--ink);outline-offset:3px}
+.ab.dim{filter:grayscale(.85) opacity(.45)}
+.opts{display:grid;gap:10px}
+.opts.two{grid-template-columns:1fr 1fr}
+.ob{background:#fff;border:2px solid var(--line);border-radius:16px;padding:14px 12px;font-size:18px;text-align:center;box-shadow:0 4px 0 var(--line);line-height:1.25;word-break:break-word}
+.ob:active{transform:translateY(3px);box-shadow:0 1px 0 var(--line)}
+.ob.sel{border-color:var(--der);background:var(--der-l);box-shadow:0 4px 0 #9fc2ff;color:var(--der-d)}
+.ob.right{border-color:var(--ok);background:var(--ok-l);box-shadow:0 4px 0 #8edbb1;color:var(--das-d)}
+.ob.wrong{border-color:var(--bad);background:var(--bad-l);box-shadow:0 4px 0 #ffb0b0;color:var(--die-d)}
+.ob:disabled{cursor:default}
+/* tiles */
+.answer{min-height:64px;border-bottom:2px solid var(--line);border-top:2px solid var(--line);padding:10px 0;display:flex;flex-wrap:wrap;gap:8px;align-content:flex-start;margin-bottom:8px}
+.preview{min-height:24px;color:var(--muted);font-size:15px;margin-bottom:14px;word-break:break-all}
+.preview b{color:var(--ink)}
+.bank{display:flex;flex-wrap:wrap;gap:8px;justify-content:center}
+.tile{background:#fff;border:2px solid var(--line);border-radius:12px;padding:9px 12px;font-size:17px;box-shadow:0 3px 0 var(--line)}
+.tile.used{visibility:hidden}
+.tile:active{transform:translateY(2px);box-shadow:0 1px 0 var(--line)}
+/* input */
+.inp{width:100%;font:inherit;font-size:20px;font-weight:800;padding:14px;border:2px solid var(--line);border-radius:16px;background:#fbfaf7;color:var(--ink)}
+.uml{display:flex;gap:8px;margin-top:10px}
+.uml button{flex:1;background:#fff;border:2px solid var(--line);border-radius:12px;padding:10px 0;font-size:18px;box-shadow:0 3px 0 var(--line)}
+/* match */
+.match{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.match .col{display:grid;gap:10px;align-content:start}
+.mb{background:#fff;border:2px solid var(--line);border-radius:14px;padding:12px 8px;font-size:15px;box-shadow:0 3px 0 var(--line);min-height:54px}
+.mb.sel{border-color:var(--der);background:var(--der-l)}
+.mb.ok{border-color:var(--ok);background:var(--ok-l);color:var(--das-d);opacity:.55}
+.mb.no{border-color:var(--bad);background:var(--bad-l);animation:shake .35s}
+@keyframes shake{25%{transform:translateX(-5px)}75%{transform:translateX(5px)}}
+/* footer */
+.lf{border-top:2px solid var(--line);padding:14px 16px calc(14px + env(safe-area-inset-bottom));background:#fff;transition:background .2s}
+.lf .in{max-width:540px;margin:0 auto}
+.lf.ok{background:var(--ok-l);border-color:transparent}
+.lf.bad{background:var(--bad-l);border-color:transparent}
+.fb{display:none;margin-bottom:12px}
+.lf.ok .fb,.lf.bad .fb{display:block}
+.fb h4{margin:0 0 4px;font-size:21px;font-weight:900;display:flex;align-items:center;gap:8px}
+.lf.ok .fb h4{color:var(--das-d)}.lf.bad .fb h4{color:var(--die-d)}
+.fb .sol{font-size:16px;font-weight:900;margin-bottom:4px}
+.lf.bad .fb .sol{color:var(--die-d)}
+.fb p{margin:0;font-size:14px;line-height:1.4;color:#4a4752;font-weight:700}
+.fb .row{display:flex;gap:10px;align-items:flex-start}
+.big-btn{width:100%;border:0;border-radius:16px;padding:15px;font-size:17px;letter-spacing:.6px;text-transform:uppercase;background:var(--accent);color:#fff;box-shadow:0 5px 0 var(--accent-d)}
+.big-btn:active{transform:translateY(4px);box-shadow:0 1px 0 var(--accent-d)}
+.big-btn:disabled{background:#e9e4da;color:#b2aca0;box-shadow:0 5px 0 #d8d1c4;cursor:default;transform:none}
+.lf.ok .big-btn{background:var(--ok);box-shadow:0 5px 0 var(--das-d)}
+.lf.bad .big-btn{background:var(--bad);box-shadow:0 5px 0 var(--die-d)}
+.ghost{width:100%;border:2px solid var(--line);border-radius:16px;padding:13px;font-size:15px;text-transform:uppercase;letter-spacing:.6px;background:#fff;box-shadow:0 4px 0 var(--line);margin-top:10px}
+/* end screen */
+.end{text-align:center;padding:30px 6px}
+.end .medal{width:120px;height:120px;margin:0 auto 10px}
+.end h2{font-size:28px;font-weight:900;margin:6px 0}
+.end p{color:var(--muted);margin:0 0 18px}
+.kpis{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin:18px 0}
+.kpi{border:2px solid var(--line);border-radius:16px;overflow:hidden}
+.kpi div{font-size:11px;text-transform:uppercase;letter-spacing:1px;padding:5px;color:#fff;font-weight:900}
+.kpi b{display:block;font-size:22px;padding:10px 4px;font-variant-numeric:tabular-nums}
+.errs{text-align:left;margin-top:8px}
+.errs h3{font-size:15px;margin:16px 0 8px}
+.err{border:2px solid var(--line);border-radius:14px;padding:10px 12px;margin-bottom:8px;font-size:14px}
+.err .q{color:var(--muted);font-weight:700}
+.err .s{color:var(--das-d);font-weight:900}
+/* sheet (modal) */
+.sheet{position:fixed;inset:0;z-index:40;background:rgba(30,25,20,.45);display:none;align-items:flex-end;justify-content:center}
+.sheet.on{display:flex}
+.sheet .box{background:#fff;width:100%;max-width:540px;border-radius:24px 24px 0 0;padding:20px 18px calc(20px + env(safe-area-inset-bottom));max-height:86%;overflow:auto}
+.sheet h3{margin:0 0 10px;font-size:20px;font-weight:900}
+.sheet .tip{font-size:15px;line-height:1.5;font-weight:700;color:#3f3c46}
+.sheet .tip table{border-collapse:collapse;width:100%;margin:8px 0;font-size:14px}
+.sheet .tip td,.sheet .tip th{border:2px solid var(--line);padding:6px 8px;text-align:left}
+.sheet .tip th{background:#faf5ea}
+.tder{color:var(--der);font-weight:900}.tdas{color:var(--das);font-weight:900}.tdie{color:var(--die);font-weight:900}
+.toast{position:fixed;left:50%;top:18px;transform:translateX(-50%);background:var(--ink);color:#fff;padding:10px 16px;border-radius:12px;z-index:60;font-size:14px;display:none}
+.blitzflash{position:fixed;inset:0;pointer-events:none;z-index:21;opacity:0;transition:opacity .25s}
+.small{font-size:12px;color:var(--muted);font-weight:700;line-height:1.4}
+.settings{display:flex;gap:10px;flex-wrap:wrap;margin-top:6px}
+@media (prefers-reduced-motion: reduce){*{transition:none!important;animation:none!important}}
+</style>
+</head>
+<body>
+<div class="app">
+  <header class="top">
+    <div class="brand"><span class="flag" aria-hidden="true"><i></i><i></i><i></i></span>Deutsch A1</div>
+    <div class="stat fire" title="Racha de días"><svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M12 2c1 3.5 5 5.5 5 10.5A5 5 0 0 1 7 12.5c0-2 1-3.4 2-4.5.2 1.8 1 3 2.2 3.6C10.8 8.5 11.3 5 12 2z"/></svg><span id="streak">0</span></div>
+    <div class="stat xp" title="Puntos de experiencia"><svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M13 2 4 14h6l-1 8 9-12h-6z"/></svg><span id="xp">0</span></div>
+  </header>
+
+  <main>
+    <section class="view on" id="v-path"></section>
+    <section class="view" id="v-practice"></section>
+    <section class="view" id="v-dict"></section>
+  </main>
+</div>
+
+<nav class="tabs" aria-label="Secciones">
+  <div class="in">
+    <button class="tab on" data-v="path"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 10.5 12 3l9 7.5V20a1 1 0 0 1-1 1h-5v-6H9v6H4a1 1 0 0 1-1-1z"/></svg>Aprender</button>
+    <button class="tab" data-v="practice"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M6 4v16M18 4v16M3 8v8M21 8v8M6 12h12"/></svg>Practicar</button>
+    <button class="tab" data-v="dict"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 4.5A2.5 2.5 0 0 1 6.5 2H20v17H6.5A2.5 2.5 0 0 0 4 21.5zM4 21.5A2.5 2.5 0 0 1 6.5 19H20v3H6.5"/></svg>Diccionario</button>
+  </div>
+</nav>
+
+<!-- Lesson -->
+<div class="lesson" id="lesson" role="dialog" aria-modal="true" aria-label="Lección">
+  <div class="lt">
+    <button class="x" id="lx" aria-label="Salir de la lección"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round"><path d="M6 6l12 12M18 6 6 18"/></svg></button>
+    <div class="bar"><i id="lbar"></i></div>
+    <div class="hearts" id="lhearts"><svg viewBox="0 0 24 24" fill="currentColor"><path d="M12 21s-7.5-4.6-9.6-9.2C.9 8.4 3 4.5 6.8 4.5c2.1 0 3.6 1.1 5.2 3 1.6-1.9 3.1-3 5.2-3 3.8 0 5.9 3.9 4.4 7.3C19.5 16.4 12 21 12 21z"/></svg><span id="lhn">5</span></div>
+    <div class="timer" id="ltimer" hidden></div>
+  </div>
+  <div class="lbody" id="lbody"></div>
+  <div class="lf" id="lfoot">
+    <div class="in">
+      <div class="fb" id="fb"></div>
+      <button class="big-btn" id="lcheck" disabled>Comprobar</button>
+    </div>
+  </div>
+</div>
+<div class="blitzflash" id="flash"></div>
+
+<!-- Sheet -->
+<div class="sheet" id="sheet"><div class="box" id="sheetbox"></div></div>
+<div class="toast" id="toast"></div>
+
+<script>
+const APP_VERSION = '1.0 · 20/11/2026 · temas 1, 2 y 3';
+/* ===================== DATOS ===================== */
+// [palabra, artículo, plural (null = solo singular), español, tema, regla]
+const N = [
+ // ---- Tema 1
+ ['Name','der','Namen','el nombre','t1','x-name'],
+ ['Vorname','der','Vornamen','el nombre de pila','t1','c-Name'],
+ ['Sprache','die','Sprachen','el idioma','t1','-e'],
+ ['Telefonnummer','die','Telefonnummern','el número de teléfono','t1','c-Nummer'],
+ ['Herr','der','Herren','el señor','t1','m'],
+ ['Frau','die','Frauen','la mujer / la señora','t1','f'],
+ ['Mann','der','Männer','el hombre','t1','m'],
+ ['Kind','das','Kinder','el niño','t1','mem'],
+ ['Land','das','Länder','el país','t1','mem'],
+ ['Stadt','die','Städte','la ciudad','t1','mem'],
+ // ---- Tema 2: tiempo libre
+ ['Hobby','das','Hobbys','el hobby','t2','mem'],
+ ['Buch','das','Bücher','el libro','t2','mem'],
+ ['Café','das','Cafés','la cafetería','t2','mem'],
+ ['Computer','der','Computer','el ordenador','t2','-er'],
+ ['Verabredung','die','Verabredungen','la cita (quedada)','t2','-ung'],
+ ['Freund','der','Freunde','el amigo','t2','m'],
+ ['Freundin','die','Freundinnen','la amiga','t2','-in'],
+ ['Fußball','der',null,'el fútbol','t2','c-Ball'],
+ ['Kino','das','Kinos','el cine','t2','-o'],
+ ['Theater','das','Theater','el teatro','t2','mem'],
+ ['Museum','das','Museen','el museo','t2','-um'],
+ ['Musik','die',null,'la música','t2','-ik'],
+ ['Schwimmbad','das','Schwimmbäder','la piscina','t2','c-Bad'],
+ ['Foto','das','Fotos','la foto','t2','-o'],
+ // ---- Tema 2: profesiones y trabajo
+ ['Beruf','der','Berufe','la profesión','t2','mem'],
+ ['Arzt','der','Ärzte','el médico','t2','m'],
+ ['Ärztin','die','Ärztinnen','la médica','t2','-in'],
+ ['Krankenhaus','das','Krankenhäuser','el hospital','t2','c-Haus'],
+ ['Koch','der','Köche','el cocinero','t2','m'],
+ ['Köchin','die','Köchinnen','la cocinera','t2','-in'],
+ ['Kellner','der','Kellner','el camarero','t2','m'],
+ ['Kellnerin','die','Kellnerinnen','la camarera','t2','-in'],
+ ['Lehrer','der','Lehrer','el profesor','t2','m'],
+ ['Lehrerin','die','Lehrerinnen','la profesora','t2','-in'],
+ ['Student','der','Studenten','el estudiante','t2','m'],
+ ['Studentin','die','Studentinnen','la estudiante','t2','-in'],
+ ['Taxifahrer','der','Taxifahrer','el taxista','t2','m'],
+ ['Krankenpfleger','der','Krankenpfleger','el enfermero','t2','m'],
+ ['Friseur','der','Friseure','el peluquero','t2','m'],
+ ['Kollege','der','Kollegen','el compañero de trabajo','t2','m'],
+ ['Kollegin','die','Kolleginnen','la compañera de trabajo','t2','-in'],
+ ['Polizist','der','Polizisten','el policía','t2','-ist'],
+ ['Journalist','der','Journalisten','el periodista','t2','-ist'],
+ ['Verkäuferin','die','Verkäuferinnen','la dependienta','t2','-in'],
+ ['Firma','die','Firmen','la empresa','t2','mem'],
+ ['Schule','die','Schulen','la escuela','t2','-e'],
+ ['Kurs','der','Kurse','el curso','t2','mem'],
+ ['Universität','die','Universitäten','la universidad','t2','-tät'],
+ ['Seminar','das','Seminare','el seminario','t2','mem'],
+ ['Taxi','das','Taxis','el taxi','t2','mem'],
+ ['Auto','das','Autos','el coche','t2','-o'],
+ ['Restaurant','das','Restaurants','el restaurante','t2','mem'],
+ ['Geld','das',null,'el dinero','t2','mem'],
+ ['Glas','das','Gläser','el vaso','t2','mem'],
+ ['Stift','der','Stifte','el boli / el lápiz','t2','mem'],
+ ['Medikament','das','Medikamente','el medicamento','t2','-ment'],
+ ['Rechnung','die','Rechnungen','la cuenta / la factura','t2','-ung'],
+ ['Tablette','die','Tabletten','la pastilla','t2','-e'],
+ ['Spritze','die','Spritzen','la inyección','t2','-e'],
+ ['Schlüssel','der','Schlüssel','la llave','t2','mem'],
+ ['Kilometer','der','Kilometer','el kilómetro','t2','-er'],
+ ['Zimmer','das','Zimmer','la habitación','t2','x-zimmer'],
+ ['Wörterbuch','das','Wörterbücher','el diccionario','t2','c-Buch'],
+ ['Beispiel','das','Beispiele','el ejemplo','t2','mem'],
+ ['Notiz','die','Notizen','la nota (apunte)','t2','mem'],
+ // ---- Tema 2: tiempo y datos personales
+ ['Tag','der','Tage','el día','t2','mem'],
+ ['Woche','die','Wochen','la semana','t2','-e'],
+ ['Wochenende','das','Wochenenden','el fin de semana','t2','c-Ende'],
+ ['Wochentag','der','Wochentage','el día de la semana','t2','c-Tag'],
+ ['Stunde','die','Stunden','la hora','t2','-e'],
+ ['Abend','der','Abende','la noche (tarde-noche)','t2','dp'],
+ ['Nachmittag','der','Nachmittage','la tarde','t2','dp'],
+ ['Moment','der','Momente','el momento','t2','mem'],
+ ['Jahr','das','Jahre','el año','t2','mem'],
+ ['Termin','der','Termine','la cita (médico, oficina)','t2','mem'],
+ ['Montag','der','Montage','el lunes','t2','tag'],
+ ['Mittwoch','der','Mittwoche','el miércoles','t2','tag'],
+ ['Freitag','der','Freitage','el viernes','t2','tag'],
+ ['Sonntag','der','Sonntage','el domingo','t2','tag'],
+ ['Information','die','Informationen','la información','t2','-ion'],
+ ['Familienname','der','Familiennamen','el apellido','t2','c-Name'],
+ ['Adresse','die','Adressen','la dirección','t2','-e'],
+ ['Straße','die','Straßen','la calle','t2','-e'],
+ ['Hausnummer','die','Hausnummern','el número de la casa','t2','c-Nummer'],
+ ['Postleitzahl','die','Postleitzahlen','el código postal','t2','c-Zahl'],
+ ['Wohnort','der','Wohnorte','el lugar de residencia','t2','c-Ort'],
+ ['Geburtsort','der','Geburtsorte','el lugar de nacimiento','t2','c-Ort'],
+ ['Geburtsdatum','das','Geburtsdaten','la fecha de nacimiento','t2','c-Datum'],
+ ['Formular','das','Formulare','el formulario','t2','mem'],
+ // ---- Tema 3: ciudad
+ ['Mensch','der','Menschen','la persona','t3','mem'],
+ ['Haus','das','Häuser','la casa','t3','mem'],
+ ['Rathaus','das','Rathäuser','el ayuntamiento','t3','c-Haus'],
+ ['Konzerthaus','das','Konzerthäuser','el auditorio','t3','c-Haus'],
+ ['Kirche','die','Kirchen','la iglesia','t3','-e'],
+ ['Turm','der','Türme','la torre','t3','mem'],
+ ['Hotel','das','Hotels','el hotel','t3','mem'],
+ ['Brücke','die','Brücken','el puente','t3','-e'],
+ ['Park','der','Parks','el parque','t3','mem'],
+ ['Markt','der','Märkte','el mercado','t3','mem'],
+ ['Bahnhof','der','Bahnhöfe','la estación de tren','t3','c-Hof'],
+ ['Hafen','der','Häfen','el puerto','t3','mem'],
+ ['See','der','Seen','el lago','t3','mem'],
+ ['Fluss','der','Flüsse','el río','t3','mem'],
+ ['Meer','das','Meere','el mar','t3','mem'],
+ ['Station','die','Stationen','la parada / la estación','t3','-ion'],
+ ['Ort','der','Orte','el lugar','t3','mem'],
+ ['Weg','der','Wege','el camino','t3','mem'],
+ ['Plan','der','Pläne','el plano','t3','mem'],
+ ['Ziel','das','Ziele','el destino / la meta','t3','mem'],
+ ['Meter','der','Meter','el metro (medida)','t3','-er'],
+ ['Euro','der','Euros','el euro','t3','x-euro'],
+ ['Kunsthalle','die','Kunsthallen','la sala de arte','t3','c-Halle'],
+ // ---- Tema 3: transporte
+ ['Fahrrad','das','Fahrräder','la bicicleta','t3','c-Rad'],
+ ['Bus','der','Busse','el autobús','t3','mem'],
+ ['Straßenbahn','die','Straßenbahnen','el tranvía','t3','c-Bahn'],
+ ['Zug','der','Züge','el tren','t3','mem'],
+ ['U-Bahn','die','U-Bahnen','el metro','t3','c-Bahn'],
+ ['S-Bahn','die','S-Bahnen','el tren de cercanías','t3','c-Bahn'],
+ ['Schiff','das','Schiffe','el barco','t3','mem'],
+ ['Flugzeug','das','Flugzeuge','el avión','t3','c-Zeug'],
+ ['Fahrkarte','die','Fahrkarten','el billete','t3','c-Karte'],
+ // ---- Tema 3: eventos, meses
+ ['Event','das','Events','el evento','t3','mem'],
+ ['Festival','das','Festivals','el festival','t3','mem'],
+ ['Ticket','das','Tickets','la entrada','t3','mem'],
+ ['Publikum','das',null,'el público','t3','-um'],
+ ['Besucher','der','Besucher','el visitante','t3','m'],
+ ['Besucherin','die','Besucherinnen','la visitante','t3','-in'],
+ ['Gast','der','Gäste','el invitado','t3','mem'],
+ ['Konzert','das','Konzerte','el concierto','t3','mem'],
+ ['Orchester','das','Orchester','la orquesta','t3','x-orch'],
+ ['Chor','der','Chöre','el coro','t3','mem'],
+ ['Konzertkarte','die','Konzertkarten','la entrada de concierto','t3','c-Karte'],
+ ['Film','der','Filme','la película','t3','mem'],
+ ['Schauspieler','der','Schauspieler','el actor','t3','m'],
+ ['Schauspielerin','die','Schauspielerinnen','la actriz','t3','-in'],
+ ['Regisseur','der','Regisseure','el director (de cine)','t3','m'],
+ ['Ausstellung','die','Ausstellungen','la exposición','t3','-ung'],
+ ['Jahreszeit','die','Jahreszeiten','la estación del año','t3','c-Zeit'],
+ ['Monat','der','Monate','el mes','t3','mem'],
+ ['Frühling','der',null,'la primavera','t3','sea'],
+ ['Sommer','der',null,'el verano','t3','sea'],
+ ['Herbst','der',null,'el otoño','t3','sea'],
+ ['Winter','der',null,'el invierno','t3','sea'],
+ ['Januar','der',null,'enero','t3','mon'],
+ ['Mai','der',null,'mayo','t3','mon'],
+ ['September','der',null,'septiembre','t3','mon'],
+ ['Gruppe','die','Gruppen','el grupo','t3','-e'],
+ ['Bild','das','Bilder','la imagen / el cuadro','t3','mem'],
+ ['Plakat','das','Plakate','el cartel','t3','mem'],
+ ['Glück','das',null,'la suerte','t3','mem'],
+ ['Test','der','Tests','el examen / el test','t3','mem'],
+ ['Welt','die','Welten','el mundo','t3','mem'],
+ ['Lösung','die','Lösungen','la solución','t3','-ung'],
+ // ---- Ficha del profe: Genus der Nomen
+ ['Zeitung','die','Zeitungen','el periódico','fi','-ung'],
+ ['Lieferant','der','Lieferanten','el proveedor','fi','-ant'],
+ ['Kundin','die','Kundinnen','la clienta','fi','-in'],
+ ['Kunde','der','Kunden','el cliente','fi','x-kunde'],
+ ['Radio','das','Radios','la radio','fi','-o'],
+ ['Vertreter','der','Vertreter','el representante','fi','-er'],
+ ['Einheit','die','Einheiten','la unidad','fi','-heit'],
+ ['Bestellung','die','Bestellungen','el pedido','fi','-ung'],
+ ['Datum','das','Daten','la fecha','fi','-um'],
+ ['Polizei','die',null,'la policía (institución)','fi','-ei'],
+ ['Hammer','der','Hämmer','el martillo','fi','-er'],
+ ['Spezialist','der','Spezialisten','el especialista','fi','-ist'],
+ ['Abteilung','die','Abteilungen','el departamento','fi','-ung'],
+ ['Ereignis','das','Ereignisse','el acontecimiento','fi','-nis'],
+ ['Manager','der','Manager','el gerente','fi','-er'],
+ ['Informatik','die',null,'la informática','fi','-ik'],
+ ['Studio','das','Studios','el estudio','fi','-o'],
+ ['Spezialität','die','Spezialitäten','la especialidad','fi','-tät'],
+ ['Praktikant','der','Praktikanten','el becario','fi','-ant'],
+ ['Praktikum','das','Praktika','las prácticas','fi','-um'],
+ ['Faktur','die','Fakturen','la factura','fi','-ur'],
+ ['Chef','der','Chefs','el jefe','fi','m'],
+ ['Arbeit','die','Arbeiten','el trabajo','fi','mem'],
+ ['Familie','die','Familien','la familia','fi','-ie'],
+ ['Kanzlei','die','Kanzleien','el despacho / bufete','fi','-ei'],
+ ['Anruf','der','Anrufe','la llamada','fi','mem'],
+ ['Betrieb','der','Betriebe','la empresa / el negocio','fi','mem'],
+ ['Frage','die','Fragen','la pregunta','fi','-e'],
+ ['Zeit','die','Zeiten','el tiempo','fi','mem'],
+ ['Übung','die','Übungen','el ejercicio','fi','-ung'],
+ ['Büro','das','Büros','la oficina','fi','-o'],
+ ['Unternehmen','das','Unternehmen','la empresa','fi','-en-v'],
+ ['Ergebnis','das','Ergebnisse','el resultado','fi','-nis'],
+ ['Adresse','die','Adressen','la dirección','fi','-e'],
+ ['Sekretärin','die','Sekretärinnen','la secretaria','fi','-in'],
+ ['Mehrheit','die','Mehrheiten','la mayoría','fi','-heit'],
+ ['Möglichkeit','die','Möglichkeiten','la posibilidad','fi','-keit'],
+ ['Gesellschaft','die','Gesellschaften','la sociedad','fi','-schaft'],
+ ['Kopie','die','Kopien','la copia','fi','-ie'],
+ ['Produktion','die','Produktionen','la producción','fi','-ion'],
+ ['Qualität','die','Qualitäten','la calidad','fi','-tät'],
+ ['Technik','die','Techniken','la técnica','fi','-ik'],
+ ['Korrespondenz','die',null,'la correspondencia','fi','-enz'],
+ ['Wagen','der','Wagen','el coche / el vagón','fi','-en-m'],
+ ['Motor','der','Motoren','el motor','fi','-or'],
+ ['Lagerist','der','Lageristen','el mozo de almacén','fi','-ist'],
+ ['Schreiben','das','Schreiben','el escrito (carta)','fi','-en-v'],
+];
+// quitar duplicados exactos (misma palabra en dos listas)
+const NOUNS = []; const seenN = new Set();
+for (const r of N){ const k=r[0]+r[1]; if(seenN.has(k)) continue; seenN.add(k);
+  NOUNS.push({de:r[0],art:r[1],pl:r[2],es:r[3],t:r[4],r:r[5]}); }
+
+const PERS = 'Personaje: der = forzudo, das = bebé, die = reina.';
+function ruleText(n){
+  const r=n.r;
+  const comp = r.startsWith('c-') ? r.slice(2) : null;
+  if(comp){
+    const head = {Name:'der Name',Nummer:'die Nummer',Ball:'der Ball',Bad:'das Bad',Haus:'das Haus',Buch:'das Buch',Ende:'das Ende',Tag:'der Tag',Zahl:'die Zahl',Ort:'der Ort',Datum:'das Datum',Hof:'der Hof',Halle:'die Halle',Rad:'das Rad',Bahn:'die Bahn',Zeug:'das Zeug',Karte:'die Karte',Zeit:'die Zeit'}[comp];
+    let t = `Palabra compuesta: manda la última palabra (${head}).`;
+    if(comp==='Ende') t += ' Trampa: no es die Woche, ¡es das Ende!';
+    return t;
+  }
+  const map = {
+    'm':'Persona masculina (hombre o profesión de hombre) → der.',
+    'f':'Persona femenina → die.',
+    '-in':'Acaba en -in: mujer o profesión femenina → die. Plural: -innen.',
+    'tag':'Días de la semana → siempre der.',
+    'mon':'Meses → siempre der.',
+    'sea':'Estaciones del año → siempre der.',
+    'dp':'Partes del día (Morgen, Nachmittag, Abend) → der.',
+    '-ung':'Acaba en -ung → siempre die.',
+    '-heit':'Acaba en -heit → die.',
+    '-keit':'Acaba en -keit → die.',
+    '-schaft':'Acaba en -schaft → die.',
+    '-ei':'Acaba en -ei → die.',
+    '-ie':'Acaba en -ie → die.',
+    '-ion':'Acaba en -ion → die.',
+    '-tät':'Acaba en -tät → die.',
+    '-ik':'Acaba en -ik → die.',
+    '-ur':'Acaba en -ur → die.',
+    '-enz':'Acaba en -enz → die.',
+    '-e':'Casi todas las que acaban en -e son die (excepciones: der Name, der Kunde, der Kollege, das Ende).',
+    '-um':'Acaba en -um → das.',
+    '-ment':'Acaba en -ment → das.',
+    '-o':'Casi todas las que acaban en -o son das (¡pero der Euro!).',
+    '-nis':'Acaba en -nis → normalmente das.',
+    '-en-v':'Verbo convertido en sustantivo (unternehmen → das Unternehmen) → das.',
+    '-er':'Muchas en -er son der (der Computer, der Meter, der Hammer)… ¡pero das Zimmer, das Theater, das Orchester!',
+    '-en-m':'Muchas en -en (que no son verbos) son der: der Wagen.',
+    '-or':'Acaba en -or → der.',
+    '-ant':'Acaba en -ant → der.',
+    '-ist':'Acaba en -ist → der.',
+    'x-name':'Excepción: acaba en -e pero es der Name.',
+    'x-kunde':'Excepción: acaba en -e pero es persona masculina → der Kunde (la clienta: die Kundin).',
+    'x-euro':'Excepción: acaba en -o pero es der Euro.',
+    'x-zimmer':'Trampa: acaba en -er pero es das Zimmer. A memorizar.',
+    'x-orch':'Trampa: acaba en -er pero es das Orchester. A memorizar.',
+    'mem':'Sin regla fija: memorízala. '+PERS
+  };
+  return map[r]||PERS;
+}
+function plStr(n){ return n.pl ? 'die '+n.pl : '(sin plural)'; }
+
+// ---- Verbos
+const VERBS = [
+ {inf:'sein',es:'ser / estar',f:['bin','bist','ist','sind','seid','sind'],irr:true},
+ {inf:'haben',es:'tener',f:['habe','hast','hat','haben','habt','haben'],irr:true},
+ {inf:'heißen',es:'llamarse'},{inf:'kommen',es:'venir'},{inf:'wohnen',es:'vivir'},
+ {inf:'kochen',es:'cocinar'},{inf:'arbeiten',es:'trabajar'},{inf:'spielen',es:'jugar'},
+ {inf:'hören',es:'escuchar'},{inf:'machen',es:'hacer'},{inf:'gehen',es:'ir (a pie)'},
+ {inf:'reisen',es:'viajar'},{inf:'tanzen',es:'bailar'},{inf:'schwimmen',es:'nadar'},
+ {inf:'joggen',es:'hacer footing'},{inf:'singen',es:'cantar'},{inf:'lernen',es:'aprender'},
+ {inf:'studieren',es:'estudiar (en la uni)'},{inf:'fotografieren',es:'hacer fotos'},
+ {inf:'lesen',es:'leer',f:['lese','liest','liest','lesen','lest','lesen'],ch:'e → ie'},
+ {inf:'sprechen',es:'hablar',f:['spreche','sprichst','spricht','sprechen','sprecht','sprechen'],ch:'e → i'},
+ {inf:'sehen',es:'ver',f:['sehe','siehst','sieht','sehen','seht','sehen'],ch:'e → ie'},
+ {inf:'fahren',es:'ir en vehículo',f:['fahre','fährst','fährt','fahren','fahrt','fahren'],ch:'a → ä'},
+];
+function conj(v){
+  if(v.f) return v.f;
+  const st=v.inf.replace(/e?n$/,'');
+  if(/[td]$/.test(st)) return [st+'e',st+'est',st+'et',st+'en',st+'et',st+'en'];
+  if(/[sßzx]$/.test(st)) return [st+'e',st+'t',st+'t',st+'en',st+'t',st+'en'];
+  return [st+'e',st+'st',st+'t',st+'en',st+'t',st+'en'];
+}
+function verbWrong(v,i){
+  if(v.irr) return [];
+  // formas erróneas típicas para usar de trampa
+  const st=v.inf.replace(/e?n$/,''); const out=[];
+  if(i===1){ out.push(st+'st'); if(/[td]$/.test(st)) out.push(st+'st'); if(/[sßz]$/.test(st)) out.push(st+'st'); }
+  if(i===2){ out.push(st+'t'); if(/[td]$/.test(st)) out.push(st+'t'); }
+  if(i===4){ out.push(st+'en'); }
+  return out;
+}
+function verbRule(v,i){
+  if(v.inf==='sein') return 'sein es irregular: ich bin, du bist, er ist, wir sind, ihr seid, sie/Sie sind.';
+  if(v.inf==='haben') return 'haben: ich habe, du hast, er hat, wir haben, ihr habt, sie/Sie haben.';
+  if(v.ch && (i===1||i===2)) return `Cambio de vocal ${v.ch} solo con du y er/es/sie.`;
+  if(v.ch) return `Cambio de vocal ${v.ch} solo en du y er/es/sie; con ${['ich','du','er','wir','ihr','sie'][i]} va normal.`;
+  const st=v.inf.replace(/e?n$/,'');
+  if(/[td]$/.test(st) && [1,2,4].includes(i)) return 'Raíz en -t/-d: se mete una e (du arbeitest, er arbeitet, ihr arbeitet).';
+  if(/[sßz]$/.test(st) && i===1) return 'Raíz en -s/-ß/-z: con du solo se añade -t (du heißt, du tanzt, du reist).';
+  return 'Terminaciones: ich -e, du -st, er/sie/es -t, wir -en, ihr -t, sie/Sie -en.';
+}
+const PERSONS = [
+ {p:'ich',i:0},{p:'du',i:1},{p:'er',i:2},{p:'sie',i:2,h:'ella'},{p:'es',i:2},
+ {p:'wir',i:3},{p:'ihr',i:4},{p:'sie',i:5,h:'ellos'},{p:'Sie',i:5,h:'usted'}];
+
+// ---- Frases para ordenar / traducir
+const SENT = [
+ {es:'Me gusta mucho cocinar.',t:['Ich','koche','sehr','gern.'],x:'kochst'},
+ {es:'El sábado vamos al cine.',t:['Am Samstag','gehen','wir','ins Kino.'],x:'geht'},
+ {es:'¿Vamos al teatro el viernes?',t:['Gehen','wir','am Freitag','ins Theater?'],x:'gehst'},
+ {es:'¿Cuándo tienes libre?',t:['Wann','hast','du','frei?'],x:'hat'},
+ {es:'¿Cuál es tu profesión?',t:['Was','bist','du','von Beruf?'],x:'ist'},
+ {es:'¡Vaya a la izquierda!',t:['Gehen','Sie','links!'],x:'Geht'},
+ {es:'¡Siga recto (en coche)!',t:['Fahren','Sie','geradeaus!'],x:'Fährt'},
+ {es:'La torre tiene 112 metros de alto.',t:['Der Turm','ist','112 Meter','hoch.'],x:'hat'},
+ {es:'Tengo libre el fin de semana.',t:['Ich','habe','am Wochenende','frei.'],x:'bin'},
+ {es:'¿Dónde trabajas?',t:['Wo','arbeitest','du?'],x:'arbeitst'},
+ {es:'¿Te gusta jugar al fútbol?',t:['Spielst','du','gern','Fußball?'],x:'Spielt'},
+ {es:'Eso no es un autobús.',t:['Das','ist','kein','Bus.'],x:'keine'},
+ {es:'Hoy no trabajo.',t:['Heute','arbeite','ich','nicht.'],x:'kein'},
+ {es:'¿De dónde eres?',t:['Woher','kommst','du?'],x:'Wo'},
+ {es:'Vivo en Hamburgo.',t:['Ich','wohne','in Hamburg.'],x:'wohnst'},
+ {es:'¿Qué idiomas hablas?',t:['Welche Sprachen','sprichst','du?'],x:'sprechst'},
+ {es:'En verano voy en bici.',t:['Im Sommer','fahre','ich','Fahrrad.'],x:'fährt'},
+ {es:'¿Cómo se llama usted?',t:['Wie','heißen','Sie?'],x:'heißt'},
+ {es:'Ella trabaja en el hospital.',t:['Sie','arbeitet','im Krankenhaus.'],x:'arbeitest'},
+ {es:'Ahí está la estación.',t:['Da','ist','der Bahnhof.'],x:'das'},
+ {es:'Tengo 22 años.',t:['Ich','bin','22 Jahre','alt.'],x:'habe'},
+ {es:'Soy estudiante.',t:['Ich','bin','Student.'],x:'ein'},
+ {es:'Él lee un libro.',t:['Er','liest','ein Buch.'],x:'lest'},
+ {es:'El lunes no puedo (no me va).',t:['Am Montag','geht','das','leider nicht.'],x:'gehe'},
+];
+
+// ---- am / im / ins / direcciones / sein-haben / tema 1
+const PREP = [
+ ['Montag','am','Días → am'],['Wochenende','am','am Wochenende'],['Freitag','am','Días → am'],['Abend','am','Partes del día → am Abend'],['Nachmittag','am','am Nachmittag'],
+ ['Mai','im','Meses → im'],['Januar','im','Meses → im'],['Sommer','im','Estaciones → im'],['Winter','im','Estaciones → im'],['Herbst','im','Estaciones → im'],
+ ['Kino','ins','Ir a un sitio das → ins (in + das)'],['Café','ins','ins Café'],['Restaurant','ins','ins Restaurant'],['Museum','ins','ins Museum'],['Theater','ins','ins Theater'],['Schwimmbad','ins','ins Schwimmbad'],['Stadion','ins','ins Stadion']];
+const SH = [
+ ['Ich ___ 22 Jahre alt.','bin','La edad va con sein: Ich bin 22 Jahre alt.'],
+ ['Wann ___ du frei?','hast','haben: du hast.'],
+ ['Ich ___ Student.','bin','Profesión con sein y sin artículo.'],
+ ['Wir ___ am Wochenende frei.','haben','haben: wir haben.'],
+ ['___ ihr Studenten?','Seid','sein: ihr seid (pregunta sí/no: verbo primero).'],
+ ['Er ___ ein Hobby: Kochen.','hat','haben: er hat.'],
+ ['Anna und Max ___ in Hamburg.','sind','sein: sie (ellos) sind.'],
+ ['Ihr ___ am Montag frei.','habt','haben: ihr habt.'],
+ ['Was ___ Sie von Beruf?','sind','sein: Sie sind.'],
+ ['Du ___ sehr nett.','bist','sein: du bist.'],
+ ['Der Turm ___ 132 Meter hoch.','ist','Adjetivo con sein: ist hoch.'],
+ ['___ du am Dienstag Zeit?','Hast','haben: du hast (pregunta sí/no: verbo primero).'],
+ ['Ich ___ am Freitag frei.','habe','haben: ich habe.'],
+ ['Das ___ der Bahnhof.','ist','sein: das ist.'],
+];
+const T1 = [
+ {p:'___ kommst du? – Aus Spanien.',a:'Woher',o:['Woher','Wo','Wie','Wer'],e:'¿De dónde? = Woher.'},
+ {p:'___ wohnst du? – In Hamburg.',a:'Wo',o:['Wo','Woher','Was','Wann'],e:'¿Dónde? = Wo.'},
+ {p:'___ heißt du? – Ich heiße Niklas.',a:'Wie',o:['Wie','Wer','Was','Wo'],e:'¿Cómo te llamas? = Wie heißt du?'},
+ {p:'___ ist das? – Das ist Frau Lang.',a:'Wer',o:['Wer','Wie','Was','Wo'],e:'¿Quién? = Wer.'},
+ {p:'___ Sprachen sprichst du?',a:'Welche',o:['Welche','Was','Wie','Wer'],e:'¿Qué idiomas? = Welche Sprachen.'},
+ {p:'___ arbeitest du? – Am Montag.',a:'Wann',o:['Wann','Wo','Wie','Was'],e:'¿Cuándo? = Wann.'},
+ {p:'___ machst du gern? – Ich koche gern.',a:'Was',o:['Was','Wer','Wie','Wann'],e:'¿Qué? = Was.'},
+ {p:'Wie geht\'s?',a:'Danke, gut.',o:['Danke, gut.','Aus Spanien.','Ich heiße Paula.','Tschüs!'],e:'Wie geht\'s? = ¿Qué tal? → Danke, gut.'},
+ {p:'Saludo por la mañana:',a:'Guten Morgen!',o:['Guten Morgen!','Gute Nacht!','Guten Abend!','Tschüs!'],e:'Guten Morgen = buenos días.'},
+ {p:'Despedida formal:',a:'Auf Wiedersehen!',o:['Auf Wiedersehen!','Hallo!','Guten Tag!','Gute Nacht!'],e:'Auf Wiedersehen = adiós (formal). Tschüs = adiós (informal).'},
+ {p:'Al irse a dormir:',a:'Gute Nacht!',o:['Gute Nacht!','Guten Abend!','Guten Morgen!','Hallo!'],e:'Gute Nacht = buenas noches (al irse a dormir). Guten Abend = buenas noches (al llegar).'},
+ {p:'Formal: Wie ___ Sie?',a:'heißen',o:['heißen','heißt','heiße','heißst'],e:'Sie (usted) = forma de infinitivo: Sie heißen.'},
+ {p:'Wie ist Ihr Name?',a:'Mein Name ist Nina Weber.',o:['Mein Name ist Nina Weber.','Ich komme aus Spanien.','Danke, gut.','In Frankfurt.'],e:'¿Cuál es su nombre? → Mein Name ist …'},
+ {p:'Woher kommen Sie?',a:'Ich komme aus Spanien.',o:['Ich komme aus Spanien.','Ich wohne in Spanien.','Ich spreche Spanisch.','Ich bin Spanien.'],e:'kommen aus = venir de.'},
+ {p:'Welche Sprachen sprichst du?',a:'Spanisch und Deutsch.',o:['Spanisch und Deutsch.','Aus Spanien.','In Elda.','Gut, danke.'],e:'Idiomas: Spanisch, Deutsch, Englisch…'},
+ {p:'«Toni» deletreado: T-O-N-I. ¿Cómo suena la T?',a:'te',o:['te','ti','tau','tse'],e:'Alfabeto: T = [te], Z = [tset], V = [fau], W = [ve], J = [jot].'},
+ {p:'¿Cómo se pronuncia la letra W?',a:'we [ve]',o:['we [ve]','dóbleve','fau','jot'],e:'W = [ve]. V = [fau].'},
+ {p:'Das ist Frau Lang. ___ kommt aus Deutschland.',a:'Sie',o:['Sie','Er','Es','Ich'],e:'Frau Lang → sie (ella).'},
+ {p:'Das ist Jan. ___ wohnt in Zürich.',a:'Er',o:['Er','Sie','Es','Du'],e:'Jan → er (él).'},
+];
+const DIRS = [['→','rechts'],['←','links'],['↑','geradeaus']];
+
+/* ===================== NÚMEROS ===================== */
+const ONES=['null','eins','zwei','drei','vier','fünf','sechs','sieben','acht','neun','zehn','elf','zwölf','dreizehn','vierzehn','fünfzehn','sechzehn','siebzehn','achtzehn','neunzehn'];
+const TENS=['','','zwanzig','dreißig','vierzig','fünfzig','sechzig','siebzig','achtzig','neunzig'];
+function t100(n){ // tokens 1..99
+  if(n<20) return [ONES[n]];
+  const u=n%10, t=Math.floor(n/10);
+  if(!u) return [TENS[t]];
+  return [u===1?'ein':ONES[u],'und',TENS[t]];
+}
+function t1000(n){ // 1..999
+  const h=Math.floor(n/100), r=n%100, out=[];
+  if(h) { if(h>1) out.push(ONES[h]); out.push('hundert'); }
+  if(r) out.push(...t100(r));
+  return out;
+}
+function numTok(n){
+  if(n===0) return ['null'];
+  const th=Math.floor(n/1000), r=n%1000, out=[];
+  if(th){ if(th>1){ const tt=t1000(th); if(tt[tt.length-1]==='eins') tt[tt.length-1]='ein'; out.push(...tt);} out.push('tausend'); }
+  if(r) out.push(...t1000(r));
+  return out;
+}
+const numDe = n => numTok(n).join('');
+function yearTok(y){
+  if(y>=2000 || y<1100) return numTok(y);
+  const c=Math.floor(y/100), r=y%100, out=[...t100(c),'hundert'];
+  if(r) out.push(...t100(r));
+  return out;
+}
+const fmt = n => n.toLocaleString('de-DE');
+function numWrongs(n, word){
+  const s=new Set();
+  const r=n%100, u=r%10, t=Math.floor(r/10);
+  if(t>=2 && u && u!==t){ const sw=n-r+u*10+t; s.add(numDe(sw)); }
+  if(t>=2 && u){ // orden "inglés"
+    const base=numTok(n-r).filter(x=>x!=='null').join('');
+    s.add(base + TENS[t] + 'und' + (u===1?'eins':ONES[u]));
+  }
+  const subs=[['sechzig','sechszig'],['siebzig','siebenzig'],['dreißig','dreizig'],['sechzehn','sechszehn'],['siebzehn','siebenzehn'],['einund','einsund'],['zwölf','zweizehn'],['elf','einzehn'],['zwanzig','zweizig']];
+  for(const [a,b] of subs) if(word.includes(a)) s.add(word.replace(a,b));
+  // vecinos
+  s.add(numDe(n+10>999999?n-10:n+10)); s.add(numDe(Math.max(0,n-1)));
+  s.delete(word);
+  return [...s];
+}
+function randInt(a,b){return a+Math.floor(Math.random()*(b-a+1));}
+function niceNum(range){
+  switch(range){
+    case 'a': return randInt(0,20);
+    case 'b': return randInt(21,99);
+    case 'c': { const k=Math.random();
+      if(k<.35) return randInt(100,999);
+      if(k<.6) return randInt(1000,9999);
+      if(k<.8) return randInt(10,99)*1000 + (Math.random()<.5?0:randInt(1,999));
+      return randInt(1,9)*100000 + randInt(0,99)*1000; }
+  }
+}
+
+/* ===================== UTILIDADES ===================== */
+const $=s=>document.querySelector(s);
+const pick=a=>a[Math.floor(Math.random()*a.length)];
+function shuffle(a){a=a.slice();for(let i=a.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[a[i],a[j]]=[a[j],a[i]];}return a;}
+const sample=(a,k)=>shuffle(a).slice(0,k);
+const uniq=a=>[...new Set(a)];
+const esc=s=>String(s).replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
+function opts(correct, wrongs, k=4){ return shuffle(uniq([correct,...shuffle(uniq(wrongs).filter(w=>w!==correct)).slice(0,k-1)])); }
+
+/* ===================== GENERADORES DE PREGUNTAS ===================== */
+function qArticle(n){
+  return {type:'article',title:'¿der, das o die?',word:n.de,es:n.es,answer:n.art,say:n.art+' '+n.de,
+    sol:`${n.art} ${n.de} · ${plStr(n)}`, explain:ruleText(n)};
+}
+function umlaut(w){
+  const m=w.match(/^(.*)(au|a|o|u)([^aeiouäöü]*)$/i);
+  if(!m) return w; const map={a:'ä',o:'ö',u:'ü',au:'äu'};
+  return m[1]+(map[m[2]]||m[2])+m[3];
+}
+function qPlural(n){
+  const w=n.de; const c=n.pl;
+  const cands=uniq([w+'e',w+'en',w+'n',w+'s',w+'er',umlaut(w)+'e',umlaut(w)+'er',w, w.replace(/e$/,'')+'en']).filter(x=>x!==c && !/ee$|eer$|een$|oe$|oen$|oer$|ye$|yen$/.test(x));
+  const wrong=cands.map(x=>'die '+x); if(n.art!=='die') wrong.unshift(n.art+' '+c);
+  return {type:'choice',title:'Elige el plural',prompt:`${n.art} ${n.de}`,say:`${n.art} ${n.de}`,options:opts('die '+c,wrong),answer:'die '+c,
+    sol:`die ${c}`,explain:'En plural el artículo es SIEMPRE die. '+pluralHint(n)};
+}
+function pluralHint(n){
+  const p=n.pl,w=n.de;
+  if(p===w) return 'Plural sin cambio (-): '+w+' → '+p+'.';
+  if(p===w+'s') return 'Plural en -s (palabras extranjeras y en vocal).';
+  if(/innen$/.test(p)) return 'Femeninas en -in → -innen.';
+  if(/er$/.test(p) && /[äöü]/.test(p) && !/[äöü]/.test(w)) return 'Plural (¨)-er: cambia la vocal y añade -er.';
+  if(/e$/.test(p) && /[äöü]/.test(p) && !/[äöü]/.test(w)) return 'Plural (¨)-e: cambia la vocal y añade -e.';
+  if(/n$/.test(p)) return 'Plural en -(e)n.';
+  if(/e$/.test(p)) return 'Plural en -e.';
+  return 'Plural irregular: memorízalo.';
+}
+function qEin(n){
+  const r=Math.random();
+  const ein = n.art==='die'?'eine':'ein', kein=n.art==='die'?'keine':'kein';
+  if(r<.33) return {type:'choice',title:'Completa',prompt:`Das ist ___ ${n.de}.`,options:['ein','eine'],two:true,answer:ein,say:`Das ist ${ein} ${n.de}.`,
+    sol:`Das ist ${ein} ${n.de}.`,explain:`${n.art} ${n.de} → ${ein}. der y das → ein; die → eine.`};
+  if(r<.6) return {type:'choice',title:'Niega',prompt:`Ist das ${ein} ${n.de}? – Nein, das ist ___ ${n.de}.`,options:['kein','keine','nicht','nein'],two:true,answer:kein,say:`Nein, das ist ${kein} ${n.de}.`,
+    sol:`Nein, das ist ${kein} ${n.de}.`,explain:`Para negar un sustantivo: kein/keine (rima con ein/eine). ${n.art} → ${kein}.`};
+  if(r<.78 && n.pl) return {type:'choice',title:'Completa',prompt:`Das sind ___ ${n.pl}. (negativo)`,options:['keine','kein','eine','nicht'],two:true,answer:'keine',say:`Das sind keine ${n.pl}.`,
+    sol:`Das sind keine ${n.pl}.`,explain:'Plural: no hay "ein", pero sí "keine" para negar.'};
+  const adj=pick(['groß','schön','neu','interessant','alt','toll']);
+  const D=n.art[0].toUpperCase()+n.art.slice(1);
+  return {type:'choice',title:'¿ein o der/das/die?',prompt:`Das ist ${ein} ${n.de}. ___ ${n.de} ist ${adj}.`,options:['Der','Das','Die','Ein'],two:true,answer:D,say:`${D} ${n.de} ist ${adj}.`,
+    sol:`${D} ${n.de} ist ${adj}.`,explain:'Primero ein (nuevo); después der/das/die (ya conocido).'};
+}
+function qVocab(n, pool){
+  const others=pool.filter(m=>m.de!==n.de && m.t===n.t);
+  const wrong=['der','das','die'].filter(a=>a!==n.art).map(a=>a+' '+n.de);
+  if(n.pl) wrong.push('die '+n.pl);
+  if(others.length) wrong.push(pick(others).art+' '+pick(others).de);
+  return {type:'choice',title:'¿Cómo se dice?',prompt:`«${n.es}»`,options:opts(`${n.art} ${n.de}`,wrong),answer:`${n.art} ${n.de}`,say:`${n.art} ${n.de}`,
+    sol:`${n.art} ${n.de} · ${plStr(n)}`,explain:ruleText(n)};
+}
+function qVocabInput(n){
+  return {type:'input',title:'Escríbelo en alemán (con artículo)',prompt:`«${n.es}»`,answers:[`${n.art} ${n.de}`],say:`${n.art} ${n.de}`,
+    sol:`${n.art} ${n.de}`,explain:'Artículo en minúscula, sustantivo con MAYÚSCULA. '+ruleText(n)};
+}
+function qMatchNouns(list){
+  return {type:'match',title:'Une las parejas',pairs:list.map(n=>[n.es,`${n.art} ${n.de}`]),sol:'',explain:''};
+}
+function qNumWord(n){
+  const w=numDe(n);
+  return {type:'choice',title:'¿Cómo se escribe?',prompt:fmt(n),big:true,options:opts(w,numWrongs(n,w)),answer:w,say:w,sol:w,explain:numExplain(n)};
+}
+function numExplain(n){
+  const r=n%100;
+  if(n<=12) return 'Del 0 al 12 se memorizan.';
+  if(n<20) return 'Del 13 al 19: número + zehn (¡sechzehn y siebzehn pierden letras!).';
+  if(n<100) return r%10 ? 'Unidad + und + decena, todo junto: "uno y veinte" = einundzwanzig.' : 'Decenas en -zig (¡30 = dreißig con ß!).';
+  return 'Centenas/miles + las dos últimas cifras al revés, todo en una palabra.';
+}
+const TILE_DISTRACT=['und','zehn','zig','eins','sechs','sieben','hundert','tausend','zwanzig','dreizig','sechszig','siebenzig','ein'];
+function qNumTiles(n, toks){
+  toks = toks || numTok(n); const word=toks.join('');
+  const extra=sample(TILE_DISTRACT.filter(x=>!toks.includes(x)),3);
+  return {type:'tiles',title:'Construye el número',prompt:fmt(n),big:true,bank:shuffle([...toks,...extra]),answer:toks,joiner:'',say:word,sol:word,explain:numExplain(n)};
+}
+function qNumInput(n){
+  const w=numDe(n);
+  return {type:'input',numeric:true,title:'Escribe la cifra',prompt:w,answers:[String(n)],say:w,sol:fmt(n),explain:numExplain(n)};
+}
+function qNumListen(n){
+  const w=numDe(n);
+  return {type:'choice',title:'Escucha y elige',listen:w,prompt:'',options:opts(fmt(n),[fmt(n+10),fmt(n-1>0?n-1:n+2),fmt(swapNum(n)),fmt(n+100)]),answer:fmt(n),say:w,sol:`${fmt(n)} = ${w}`,explain:numExplain(n)};
+}
+function swapNum(n){const r=n%100,u=r%10,t=Math.floor(r/10);return (t&&u&&t!==u)? n-r+u*10+t : n+1;}
+function qNumMatch(nums){ return {type:'match',title:'Une cifra y palabra',pairs:nums.map(n=>[fmt(n),numDe(n)])}; }
+function qYear(){
+  const y=Math.random()<.6?randInt(1700,1999):randInt(2000,2030);
+  const toks=yearTok(y), w=toks.join('');
+  if(Math.random()<.5){
+    const wrong=[numDe(y)];
+    if(y<2000){ wrong.push(t100(Math.floor(y/100)).join('')+'hundert'+(y%100?numDe(y%100).replace(/^ein$/,'eins'):'')+'s'); wrong.push(numDe(y+1));
+      wrong.push((y<2000? t100(Math.floor(y/100)).join('')+'hundert':'')+numWrongs(y%100||21,numDe(y%100||21))[0]); }
+    else wrong.push('zwanzig'+numDe(y%100)), wrong.push(numDe(y+10));
+    return {type:'choice',title:'¿Cómo se dice este año?',prompt:String(y),big:true,options:opts(w,wrong),answer:w,say:w,sol:w,
+      explain: y<2000?'Años antes de 2000: en centenas. 1792 = siebzehnhundertzweiundneunzig.':'Desde 2000: número normal. 2017 = zweitausendsiebzehn.'};
+  }
+  return Object.assign(qNumTiles(y,toks),{title:'Construye el año',prompt:String(y),explain:y<2000?'Años antes de 2000 en centenas: siebzehn-hundert-…':'Desde 2000: zweitausend…'});
+}
+function qPrice(){
+  const e=randInt(1,99), c=pick([0,10,20,49,50,90,95,99]);
+  const ew = e===1?'ein':numDe(e);
+  const w = c? `${ew} Euro ${numDe(c)}` : `${ew} Euro`;
+  const wrong=[ `${ew} Euros ${numDe(c||50)}`, `${ew} Komma ${numDe(c||50)} Euro`, `${numDe(swapNum(e)).replace(/^eins$/,'ein')} Euro ${numDe(c||20)}`];
+  return {type:'choice',title:'¿Cómo se dice el precio?',prompt:c?`${e},${String(c).padStart(2,'0')} €`:`${e} €`,big:true,options:opts(w,wrong),answer:w,say:w,sol:w,
+    explain:'Precios: euros + Euro + céntimos. Euro no lleva -s con números.'};
+}
+function qBigFacts(){
+  return pick([
+    {type:'choice',title:'Elige',prompt:'1.000.000',big:true,options:['eine Million','eine Milliarde','tausendtausend','ein Billion'],answer:'eine Million',say:'eine Million',sol:'eine Million',explain:'Million va separada y con "eine".'},
+    {type:'choice',title:'Elige',prompt:'1.000.000.000',big:true,options:['eine Milliarde','eine Billion','eine Million','tausend Millionen'],answer:'eine Milliarde',say:'eine Milliarde',sol:'eine Milliarde',explain:'Milliarde = mil millones (¡no es un billón!).'},
+    {type:'choice',title:'Elige',prompt:'4,5 Millionen',big:true,options:['vier Komma fünf Millionen','vier Punkt fünf Millionen','vierfünf Millionen','vier und fünf Millionen'],answer:'vier Komma fünf Millionen',say:'vier Komma fünf Millionen',sol:'vier Komma fünf Millionen',explain:'La coma decimal se dice Komma.'},
+    {type:'choice',title:'¿Qué número es?',prompt:'12.000',big:true,options:['zwölftausend','zwölf Komma null','zwölfhundert','einhundertzwanzig'],answer:'zwölftausend',say:'zwölftausend',sol:'zwölftausend',explain:'En alemán el punto separa los miles: 12.000 = doce mil.'},
+  ]);
+}
+function qVerb(v, input){
+  const P=pick(PERSONS); const forms=conj(v); const ans=forms[P.i];
+  const subj=P.p+(P.h?` (${P.h})`:'');
+  if(input) return {type:'input',title:`Conjuga: ${v.inf} (${v.es})`,prompt:`${subj} ___`,answers:[ans],say:`${P.p} ${ans}`,sol:`${P.p} ${ans}`,explain:verbRule(v,P.i)};
+  const wrong=[...verbWrong(v,P.i),...forms].filter(f=>f!==ans);
+  return {type:'choice',title:`Conjuga: ${v.inf} (${v.es})`,prompt:`${subj} ___`,options:opts(ans,wrong),two:true,answer:ans,say:`${P.p} ${ans}`,sol:`${P.p} ${ans}`,explain:verbRule(v,P.i)};
+}
+function qSH(){
+  const [p,a,e]=pick(SH);
+  const base=['bin','bist','ist','sind','seid','habe','hast','hat','haben','habt'];
+  const cap=/^[A-Z]/.test(a);
+  const pool=base.map(x=>cap?x[0].toUpperCase()+x.slice(1):x);
+  return {type:'choice',title:'¿sein o haben?',prompt:p,options:opts(a,pool),two:true,answer:a,say:p.replace('___',a),sol:p.replace('___',a),explain:e};
+}
+function qSent(s, withExtra){
+  const bank = withExtra && s.x ? shuffle([...s.t, s.x]) : shuffle(s.t);
+  const de=s.t.join(' ');
+  return {type:'tiles',title:'Traduce ordenando las piezas',prompt:s.es,bank,answer:s.t,joiner:' ',say:de,sol:de,
+    explain:'Afirmación y pregunta W: verbo en posición 2. Pregunta sí/no e imperativo: verbo en posición 1.'};
+}
+function qPrep(){
+  const [w,a,e]=pick(PREP);
+  return {type:'choice',title:'¿am, im o ins?',prompt:`___ ${w}`,options:['am','im','ins'],answer:a,say:`${a} ${w}`,sol:`${a} ${w}`,explain:e};
+}
+function qDir(){
+  const [arrow,w]=pick(DIRS); const verb=pick(['Gehen','Fahren']);
+  return {type:'choice',title:'Indica el camino',prompt:`${verb} Sie ___!  ${arrow}`,options:['rechts','links','geradeaus'],answer:w,say:`${verb} Sie ${w}!`,sol:`${verb} Sie ${w}!`,
+    explain:'rechts = derecha →, links = izquierda ←, geradeaus = recto ↑. Imperativo con Sie: verbo + Sie.'};
+}
+function qT1(){ const it=pick(T1); return {type:'choice',title:'Tema 1',prompt:it.p,options:shuffle(it.o),answer:it.a,say:it.p.includes('___')?it.p.replace('___',it.a):it.a,sol:it.a,explain:it.e}; }
+
+/* ===================== UNIDADES ===================== */
+const byRule = rs => NOUNS.filter(n=>rs.some(r=> r.endsWith('*') ? n.r.startsWith(r.slice(0,-1)) : n.r===r));
+const SUFFIX = ['-ung','-heit','-keit','-schaft','-ei','-ie','-ion','-tät','-ik','-ur','-enz','-e','-um','-ment','-o','-nis','-en-v','-er','-en-m','-or','-ant','-ist','x-name','x-kunde','x-euro','x-zimmer','x-orch'];
+function make(n, makers){ const out=[]; for(let i=0;i<n;i++) out.push(makers[i%makers.length]()); return shuffle(out); }
+function nounLesson(pool, lvl){
+  const ns=shuffle(pool);
+  let i=0; const next=()=>ns[(i++)%ns.length];
+  if(lvl===1) return make(10,[()=>qArticle(next())]);
+  if(lvl===2) return [...make(7,[()=>qArticle(next()),()=>qVocab(next(),pool),()=>qArticle(next())]), qMatchNouns(sample(pool,5)), ...make(2,[()=>qArticle(next())])];
+  return [...make(6,[()=>qArticle(next()),()=>qVocabInput(next()),()=>qArticle(next())]), qMatchNouns(sample(pool,5)), ...make(3,[()=>qVocabInput(next()),()=>{const p=withPl(pool);return p.length?qPlural(pick(p)):qArticle(next());}])];
+}
+const withPl = p => p.filter(n=>n.pl);
+const einPool = p => p.filter(n=>n.pl && !['tag','mon','sea','dp'].includes(n.r));
+const COLORS = {art:['#1f6feb','#1650ad'],num:['#ff7a1a','#d95f00'],verb:['#8b5cf6','#6d3fd6'],voc:['#13a05a','#0c7440'],t1:['#0ea5b7','#0a7f8d']};
+
+const UNITS = [
+ {sec:'Artículos (lo que más cuenta)',id:'a1',c:'art',title:'Personas y tiempo',desc:'Hombres der, mujeres die, días, meses y estaciones der.',
+  gen:l=>nounLesson(byRule(['m','f','-in','tag','mon','sea','dp']),l),
+  tip:`<p><span class="tder">der</span>: hombres y profesiones masculinas (der Arzt, der Lehrer), <b>días</b> (der Montag), <b>meses</b> (der Mai), <b>estaciones</b> (der Sommer), partes del día (der Abend).</p><p><span class="tdie">die</span>: mujeres y profesiones en <b>-in</b> (die Ärztin). Plural: <b>-innen</b>.</p><p>Ojo: der Arzt → die <b>Ä</b>rztin, der Koch → die K<b>ö</b>chin.</p>`},
+ {sec:'Artículos (lo que más cuenta)',id:'a2',c:'art',title:'Terminaciones que delatan',desc:'-ung, -heit, -ion → die · -um, -ment → das · -or, -ist → der',
+  gen:l=>nounLesson(byRule(SUFFIX),l),
+  tip:`<table><tr><th class="tdie">die</th><th class="tder">der</th><th class="tdas">das</th></tr>
+  <tr><td>-ung, -heit, -keit, -schaft, -ei, -ie, -ion, -tät, -ik, -ur, -enz, casi todas en -e</td><td>-or, -ant, -ist, muchas en -er y -en</td><td>-um, -ment, -o, -nis, verbo como nombre (das Essen)</td></tr></table>
+  <p><b>Trampas:</b> der Name, der Kunde, der Kollege (en -e pero der) · der Euro · das Zimmer, das Theater, das Orchester (en -er pero das).</p>`},
+ {sec:'Artículos (lo que más cuenta)',id:'a3',c:'art',title:'Palabras compuestas',desc:'Manda la ÚLTIMA palabra: Kranken + das Haus = das Krankenhaus.',
+  gen:l=>nounLesson(byRule(['c-*']),l),
+  tip:`<p>El artículo lo pone siempre <b>la última palabra</b>:</p><table><tr><td>Bahn<b>hof</b></td><td class="tder">der Hof</td></tr><tr><td>Kranken<b>haus</b>, Rat<b>haus</b></td><td class="tdas">das Haus</td></tr><tr><td>Straßen<b>bahn</b>, U-<b>Bahn</b></td><td class="tdie">die Bahn</td></tr><tr><td>Fahr<b>rad</b></td><td class="tdas">das Rad</td></tr><tr><td>Wochen<b>ende</b></td><td class="tdas">das Ende</td></tr></table>`},
+ {sec:'Artículos (lo que más cuenta)',id:'a4',c:'art',title:'Sin regla: a memorizar',desc:'Las que no avisan: der Bahnhof, das Hotel, die Stadt… usa los personajes.',
+  gen:l=>nounLesson(byRule(['mem']),l),
+  tip:`<p>Truco de los personajes: imagina la palabra con su personaje.</p><p><span class="tder">der</span> = un <b>forzudo</b> (el forzudo levanta der Turm).<br><span class="tdas">das</span> = un <b>bebé</b> (el bebé muerde das Buch).<br><span class="tdie">die</span> = una <b>reina</b> (la reina entra en die Stadt).</p><p>Cuanto más absurda la escena, mejor se queda.</p>`},
+ {sec:'Artículos (lo que más cuenta)',id:'a5',c:'art',title:'Plurales',desc:'Las 5 terminaciones: -, -(e)n, -e, -er, -s. El artículo: siempre die.',
+  gen:l=>{const p=withPl(NOUNS.filter(n=>n.t!=='fi'));return make(10,[()=>qPlural(pick(p))]);},
+  tip:`<table><tr><td><b>-</b></td><td>der Lehrer → die Lehrer</td></tr><tr><td><b>-(e)n</b></td><td>die Stunde → die Stunden</td></tr><tr><td><b>(¨)-e</b></td><td>der Arzt → die Ärzte</td></tr><tr><td><b>(¨)-er</b></td><td>das Buch → die Bücher</td></tr><tr><td><b>-s</b></td><td>das Auto → die Autos</td></tr></table><p>Femeninas en -in → <b>-innen</b>. Plural: artículo <b>die</b> siempre.</p>`},
+ {sec:'Artículos (lo que más cuenta)',id:'a6',c:'art',title:'ein · eine · kein · keine',desc:'Nuevo → ein; conocido → der/das/die; negar → kein.',
+  gen:l=>{const p=einPool(NOUNS.filter(n=>n.t==='t3'||n.t==='t2'));return make(10,[()=>qEin(pick(p))]);},
+  tip:`<table><tr><th></th><th>der</th><th>das</th><th>die</th><th>Plural</th></tr><tr><td>un/una</td><td>ein</td><td>ein</td><td>eine</td><td>–</td></tr><tr><td>ningún</td><td>kein</td><td>kein</td><td>keine</td><td>keine</td></tr></table><p><b>Das ist ein Hafen. Der Hafen ist groß.</b> (primero ein, luego der)</p><p><b>kein</b> niega sustantivos; <b>nicht</b> niega verbos: Ich koche nicht gern.</p>`},
+ {sec:'Artículos (lo que más cuenta)',id:'a7',c:'art',title:'Ficha del profe: Genus der Nomen',desc:'Las palabras de los ejercicios 5b, 5c y 5d.',
+  gen:l=>nounLesson(NOUNS.filter(n=>n.t==='fi'),l),
+  tip:`<p>Es la ficha de deberes (5c, 5d). Mira primero la terminación: -ung, -heit, -keit, -ion, -tät → <span class="tdie">die</span>; -ant, -ist, -or → <span class="tder">der</span>; -um, -o, -nis → <span class="tdas">das</span>.</p><p>Sin artículo en plural: <b>die Kinder, die Ergebnisse</b>.</p>`},
+
+ {sec:'Números',id:'n1',c:'num',title:'Del 0 al 20',desc:'Ojo: sechzehn, siebzehn, elf, zwölf.',
+  gen:l=>{const N=()=>niceNum('a');return l===1?make(10,[()=>qNumWord(N())]):l===2?[...make(8,[()=>qNumWord(N()),()=>qNumListen(N())]),qNumMatch(uniq(Array.from({length:8},N)).slice(0,5)),qNumWord(16)]:make(10,[()=>qNumInput(N()),()=>qNumWord(N())]);},
+  tip:`<p>0 null · 1 eins · 2 zwei · 3 drei · 4 vier · 5 fünf · 6 sechs · 7 sieben · 8 acht · 9 neun · 10 zehn · <b>11 elf · 12 zwölf</b></p><p>13–19: número + zehn → dreizehn… <b>sechzehn</b> (sin s) y <b>siebzehn</b> (sin en).</p>`},
+ {sec:'Números',id:'n2',c:'num',title:'Del 21 al 99',desc:'Al revés: 45 = fünfundvierzig (“cinco y cuarenta”).',
+  gen:l=>{const N=()=>niceNum('b');return l===1?make(10,[()=>qNumWord(N()),()=>qNumTiles(N())]):l===2?[...make(9,[()=>qNumTiles(N()),()=>qNumListen(N()),()=>qNumWord(N())]),qNumMatch(uniq(Array.from({length:8},N)).slice(0,5))]:make(10,[()=>qNumInput(N()),()=>qNumTiles(N())]);},
+  tip:`<p><b>unidad + und + decena</b>, todo junto: 21 = <b>ein</b>undzwanzig (¡ein, no eins!), 67 = siebenundsechzig.</p><p>Decenas: zwanzig, <b>dreißig</b> (ß), vierzig, fünfzig, <b>sechzig</b>, <b>siebzig</b>, achtzig, neunzig.</p>`},
+ {sec:'Números',id:'n3',c:'num',title:'Del 100 al millón',desc:'160 = hundertsechzig · 1.250 = tausendzweihundertfünfzig',
+  gen:l=>{const N=()=>niceNum('c');return l===1?make(10,[()=>qNumWord(N()),()=>qNumTiles(N())]):l===2?[...make(8,[()=>qNumTiles(N()),()=>qNumWord(N()),()=>qNumListen(N())]),qBigFacts(),qNumMatch(uniq(Array.from({length:6},()=>randInt(100,999))).slice(0,4))]:make(10,[()=>qNumInput(N()),()=>qNumTiles(N()),()=>qBigFacts()]);},
+  tip:`<p><b>Método de 3 pasos:</b> 1) centenas o miles, 2) las dos últimas cifras al revés, 3) todo junto.</p><p>160 = hundert + sechzig → <b>hundertsechzig</b><br>345 = dreihundert + fünfundvierzig<br>68.000 = achtundsechzig + tausend</p><p>1.000.000 = <b>eine Million</b> · 1.000.000.000 = <b>eine Milliarde</b> (mil millones).</p>`},
+ {sec:'Números',id:'n4',c:'num',title:'Años, precios y decimales',desc:'1792 = siebzehnhundertzweiundneunzig · 12,50 € = zwölf Euro fünfzig',
+  gen:l=>make(10,[qYear,qPrice,qYear,qBigFacts]),
+  tip:`<p><b>Años antes de 2000</b>, en centenas: 1901 = neunzehnhunderteins, 1972 = neunzehnhundertzweiundsiebzig.</p><p><b>Desde 2000</b>, normal: 2017 = zweitausendsiebzehn.</p><p><b>Precios:</b> 3,50 € = drei Euro fünfzig. <b>Decimales:</b> 4,5 = vier Komma fünf.</p>`},
+
+ {sec:'Verbos y frases',id:'v1',c:'verb',title:'sein y haben',desc:'Los que más caen: ich bin, du hast, ihr seid…',
+  gen:l=>{const sh=VERBS.slice(0,2);return l===3?make(10,[()=>qVerb(pick(sh),true),qSH]):make(10,[qSH,()=>qVerb(pick(sh))]);},
+  tip:`<table><tr><th></th><th>sein</th><th>haben</th></tr><tr><td>ich</td><td>bin</td><td>habe</td></tr><tr><td>du</td><td>bist</td><td>hast</td></tr><tr><td>er/sie/es</td><td>ist</td><td>hat</td></tr><tr><td>wir</td><td>sind</td><td>haben</td></tr><tr><td>ihr</td><td>seid</td><td>habt</td></tr><tr><td>sie/Sie</td><td>sind</td><td>haben</td></tr></table><p>Edad: <b>Ich bin 22 Jahre alt</b> (¡no habe!).</p>`},
+ {sec:'Verbos y frases',id:'v2',c:'verb',title:'Presente: todos los verbos',desc:'-e, -st, -t, -en, -t, -en + arbeiten, heißen, lesen, sprechen, fahren.',
+  gen:l=>{const vs=VERBS.slice(2);return l===3?make(10,[()=>qVerb(pick(vs),true)]):make(10,[()=>qVerb(pick(vs))]);},
+  tip:`<p>Terminaciones: ich <b>-e</b>, du <b>-st</b>, er/sie/es <b>-t</b>, wir <b>-en</b>, ihr <b>-t</b>, sie/Sie <b>-en</b>.</p><p>arbeiten → du arbeit<b>e</b>st, er arbeit<b>e</b>t · heißen → du hei<b>ßt</b> · tanzen → du tanz<b>t</b></p><p>e→i/ie y a→ä <b>solo</b> con du y er: du liest, er spricht, er fährt.</p>`},
+ {sec:'Verbos y frases',id:'v3',c:'verb',title:'Orden de la frase',desc:'Verbo en posición 2; en preguntas sí/no e imperativo, en posición 1.',
+  gen:l=>shuffle(sample(SENT,10)).map(s=>qSent(s,l>1)),
+  tip:`<table><tr><td>Afirmación</td><td>Ich <b>gehe</b> ins Kino.</td></tr><tr><td>Invertida</td><td>Am Montag <b>gehe</b> ich ins Kino.</td></tr><tr><td>Pregunta W</td><td>Wann <b>gehst</b> du?</td></tr><tr><td>Pregunta sí/no</td><td><b>Gehst</b> du ins Kino?</td></tr><tr><td>Imperativo</td><td><b>Gehen</b> Sie links!</td></tr></table>`},
+ {sec:'Verbos y frases',id:'v4',c:'verb',title:'am · im · ins · direcciones',desc:'am Montag, im Mai, ins Kino · links, rechts, geradeaus.',
+  gen:l=>make(10,[qPrep,qDir,qPrep]),
+  tip:`<p><b>am</b> + días y partes del día: am Montag, am Wochenende, am Abend.</p><p><b>im</b> + meses y estaciones: im Mai, im Sommer.</p><p><b>ins</b> + sitio (das): ins Kino, ins Café, ins Museum.</p><p>links ← · rechts → · geradeaus ↑ · <b>Gehen Sie</b> links! <b>Fahren Sie</b> geradeaus!</p>`},
+
+ {sec:'Vocabulario por temas',id:'w1',c:'t1',title:'Tema 1: saludos y preguntas W',desc:'Wer, wie, wo, woher, welche · Guten Morgen, Tschüs…',
+  gen:l=>[...make(8,[qT1]), ...make(2,[()=>qArticle(pick(NOUNS.filter(n=>n.t==='t1')))])],
+  tip:`<p><b>Wer</b> quién · <b>Wie</b> cómo · <b>Was</b> qué · <b>Wo</b> dónde · <b>Woher</b> de dónde · <b>Wann</b> cuándo · <b>Welche</b> cuál/qué</p><p>W-Frage: palabra W + <b>verbo en posición 2</b>: Woher <b>kommst</b> du?</p><p>Hallo · Guten Morgen/Tag/Abend · Tschüs · Auf Wiedersehen · Gute Nacht · Wie geht's? – Danke, gut.</p>`},
+ {sec:'Vocabulario por temas',id:'w2',c:'voc',title:'Tema 2: hobbies, trabajo y tiempo',desc:'Kino, Beruf, Krankenhaus, Woche, Formular…',
+  gen:l=>{const p=NOUNS.filter(n=>n.t==='t2');return l===1?make(10,[()=>qVocab(pick(p),p),()=>qArticle(pick(p))]):l===2?[...make(9,[()=>qVocab(pick(p),p),()=>qArticle(pick(p)),()=>qPlural(pick(withPl(p)))]),qMatchNouns(sample(p,5))]:make(10,[()=>qVocabInput(pick(p)),()=>qPlural(pick(withPl(p)))]);},
+  tip:`<p>Aprende cada palabra como <b>bloque</b>: artículo + palabra + plural. Ejemplo: <b>der Arzt, die Ärzte</b>.</p><p>Hobbies con <b>gern</b>: Ich koche <b>gern</b>. Ich lese <b>sehr gern</b>. Ich tanze <b>nicht so gern</b>.</p>`},
+ {sec:'Vocabulario por temas',id:'w3',c:'voc',title:'Tema 3: ciudad y transporte',desc:'Bahnhof, Rathaus, Brücke, U-Bahn, Fahrrad…',
+  gen:l=>{const p=NOUNS.filter(n=>n.t==='t3' && !['sea','mon'].includes(n.r) && !['Event','Festival','Ticket','Publikum','Besucher','Besucherin','Gast','Konzert','Orchester','Chor','Konzertkarte','Film','Schauspieler','Schauspielerin','Regisseur','Ausstellung','Jahreszeit','Monat','Gruppe','Bild','Plakat','Glück','Test','Welt','Lösung'].includes(n.de));
+    return l===1?make(10,[()=>qVocab(pick(p),p),()=>qArticle(pick(p))]):l===2?[...make(9,[()=>qVocab(pick(p),p),()=>qEin(pick(einPool(p))),()=>qArticle(pick(p))]),qMatchNouns(sample(p,5))]:make(10,[()=>qVocabInput(pick(p)),()=>qPlural(pick(withPl(p)))]);},
+  tip:`<p>Was ist das? – Das ist <b>ein</b> Bahnhof. <b>Der</b> Bahnhof heißt Hamburg Hbf.</p><p>Ist das ein Bus? – Nein, das ist <b>kein</b> Bus, das ist <b>eine</b> U-Bahn.</p><p>Medidas con sein: Der Turm <b>ist</b> 132 Meter <b>hoch</b>.</p>`},
+ {sec:'Vocabulario por temas',id:'w4',c:'voc',title:'Tema 3: eventos, meses y estaciones',desc:'Konzert, Film, Festival · im Mai, im Sommer.',
+  gen:l=>{const p=NOUNS.filter(n=>['Event','Festival','Ticket','Publikum','Besucher','Besucherin','Gast','Konzert','Orchester','Chor','Konzertkarte','Film','Schauspieler','Schauspielerin','Regisseur','Ausstellung','Jahreszeit','Monat','Frühling','Sommer','Herbst','Winter','Januar','Mai','September','Gruppe','Bild','Plakat','Glück','Test','Welt','Lösung'].includes(n.de));
+    return l===3?make(10,[()=>qVocabInput(pick(p)),qPrep]):[...make(9,[()=>qVocab(pick(p),p),()=>qArticle(pick(p)),qPrep]),qMatchNouns(sample(p,5))];},
+  tip:`<p>Internacionales, pero <b>el artículo no se adivina por el inglés</b>: der Film, das Konzert, das Festival, der Chor, das Orchester.</p><p>Meses y estaciones: todos <b>der</b> y con <b>im</b>: im Januar, im Sommer.</p>`},
+];
+
+/* ===================== ESTADO (guardado en este móvil) ===================== */
+const KEY='deutschA1_v1';
+let S={xp:0,streak:0,last:'',done:{},blitz:0,mist:[],daily:{d:'',xp:0},sound:true,goal:50};
+try{ const raw=localStorage.getItem(KEY); if(raw) S=Object.assign(S,JSON.parse(raw)); }catch(e){}
+function save(){ try{ localStorage.setItem(KEY,JSON.stringify(S)); }catch(e){} }
+const today=()=>{const d=new Date();return d.getFullYear()+'-'+(d.getMonth()+1)+'-'+d.getDate();};
+function addXP(x){
+  const t=today();
+  if(S.daily.d!==t) S.daily={d:t,xp:0};
+  S.daily.xp+=x; S.xp+=x;
+  if(S.last!==t){
+    const y=new Date(); y.setDate(y.getDate()-1);
+    const yk=y.getFullYear()+'-'+(y.getMonth()+1)+'-'+y.getDate();
+    S.streak = (S.last===yk) ? S.streak+1 : 1; S.last=t;
+  }
+  save(); renderStats();
+}
+function renderStats(){
+  let st=S.streak; if(S.last){ const y=new Date(); y.setDate(y.getDate()-1); const yk=y.getFullYear()+'-'+(y.getMonth()+1)+'-'+y.getDate(); if(S.last!==today() && S.last!==yk) st=0; }
+  $('#streak').textContent=st; $('#xp').textContent=S.xp;
+}
+function pushMistake(q){
+  if(q.type==='match') return;
+  const key=q.title+'|'+(q.prompt||q.word||q.listen);
+  const clean=Object.assign({},q); delete clean._retry; delete clean._picked; delete clean._m;
+  S.mist=S.mist.filter(m=>m.k!==key); S.mist.unshift({k:key,q:clean}); S.mist=S.mist.slice(0,80); save();
+}
+function clearMistake(q){ const key=q.title+'|'+(q.prompt||q.word||q.listen); const l=S.mist.length; S.mist=S.mist.filter(m=>m.k!==key); if(l!==S.mist.length) save(); }
+
+/* ===================== VOZ Y SONIDO ===================== */
+let voice=null;
+function pickVoice(){ try{ const vs=speechSynthesis.getVoices(); voice=vs.find(v=>/^de(-|_)DE/i.test(v.lang))||vs.find(v=>/^de/i.test(v.lang))||null; }catch(e){} }
+try{ pickVoice(); speechSynthesis.onvoiceschanged=pickVoice; }catch(e){}
+function say(t){
+  try{ if(!t) return; speechSynthesis.cancel(); const u=new SpeechSynthesisUtterance(t.replace(/___/g,'')); u.lang='de-DE'; if(voice) u.voice=voice; u.rate=.88; speechSynthesis.speak(u); }
+  catch(e){ toast('Este navegador no tiene voz en alemán'); }
+}
+let actx=null;
+function beep(ok){
+  if(!S.sound) return;
+  try{ actx=actx||new (window.AudioContext||window.webkitAudioContext)(); const t=actx.currentTime;
+    const notes= ok? [[660,0],[880,.09]] : [[220,0],[180,.12]];
+    notes.forEach(([f,d])=>{const o=actx.createOscillator(),g=actx.createGain();o.type=ok?'triangle':'square';o.frequency.value=f;g.gain.setValueAtTime(.0001,t+d);g.gain.exponentialRampToValueAtTime(ok?.18:.06,t+d+.02);g.gain.exponentialRampToValueAtTime(.0001,t+d+.18);o.connect(g).connect(actx.destination);o.start(t+d);o.stop(t+d+.2);});
+  }catch(e){}
+}
+function toast(m){const t=$('#toast');t.textContent=m;t.style.display='block';clearTimeout(t._h);t._h=setTimeout(()=>t.style.display='none',2200);}
+
+/* ===================== ICONOS ===================== */
+const IC={
+ star:'<svg viewBox="0 0 24 24" fill="currentColor"><path d="m12 2 3 6.6 7.2.8-5.4 4.9 1.5 7.1L12 17.8 5.7 21.4l1.5-7.1L1.8 9.4 9 8.6z"/></svg>',
+ play:'<svg viewBox="0 0 24 24" fill="currentColor"><path d="M8 5v14l11-7z"/></svg>',
+ spk:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M11 5 6 9H2v6h4l5 4zM15.5 8.5a5 5 0 0 1 0 7M19 5a10 10 0 0 1 0 14"/></svg>',
+ check:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3.2" stroke-linecap="round" stroke-linejoin="round"><path d="m4 12 5 5L20 6"/></svg>',
+ cross:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3.2" stroke-linecap="round"><path d="M6 6l12 12M18 6 6 18"/></svg>',
+ bolt:'<svg viewBox="0 0 24 24" fill="currentColor"><path d="M13 2 4 14h6l-1 8 9-12h-6z"/></svg>',
+ redo:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"><path d="M3 12a9 9 0 1 0 3-6.7L3 8M3 3v5h5"/></svg>',
+ exam:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M9 3h6l1 2h3v16H5V5h3zM9 12l2 2 4-4"/></svg>',
+ hash:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round"><path d="M5 9h15M4 15h15M10 3 8 21M16 3l-2 18"/></svg>',
+ abc:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M3 18 7 6l4 12M4.5 14h5M14 6h4a3 3 0 0 1 0 6h-4zm0 6h4.5a3 3 0 0 1 0 6H14z"/></svg>',
+};
+
+/* ===================== VISTAS ===================== */
+function renderPath(){
+  const totalLv=UNITS.length*3, doneLv=UNITS.reduce((a,u)=>a+(S.done[u.id]||0),0);
+  const dx=(S.daily.d===today()?S.daily.xp:0), pct=Math.min(1,dx/S.goal);
+  let h=`<div class="hero"><div><h1>Examen escrito: temas 2, 3 y 4</h1><p>Semana 6 · 65 % de la nota. Llevas ${doneLv} de ${totalLv} lecciones.</p></div>
+   <div class="ring" title="Meta diaria"><svg viewBox="0 0 64 64"><circle cx="32" cy="32" r="27" fill="none" stroke="#efe6d4" stroke-width="8"/><circle cx="32" cy="32" r="27" fill="none" stroke="#ff7a1a" stroke-width="8" stroke-linecap="round" stroke-dasharray="${(2*Math.PI*27).toFixed(1)}" stroke-dashoffset="${((1-pct)*2*Math.PI*27).toFixed(1)}"/></svg><b>${dx}<br><span style="font-size:10px;color:var(--muted)">/${S.goal} XP</span></b></div></div>`;
+  let sec='';
+  UNITS.forEach((u,ui)=>{
+    if(u.sec!==sec){ sec=u.sec; h+=`<h2 class="sec">${esc(sec)}</h2>`; }
+    const [c,cd]=COLORS[u.c]; const d=S.done[u.id]||0;
+    h+=`<article class="unit"><div class="uh"><div class="badge" style="background:${c}">${ui+1}</div><div><h3>${esc(u.title)}</h3><p class="d">${esc(u.desc)}</p></div></div>
+    <div class="lv">${[1,2,3].map(l=>`<div class="lvwrap"><button class="lvb ${d>=l?'done':''}" style="--c:${c};--cd:${cd}" data-u="${u.id}" data-l="${l}" aria-label="${esc(u.title)}, nivel ${l}">${d>=l?IC.star:'<span>'+l+'</span>'}</button><div class="lvlabel">${['Fácil','Medio','Difícil'][l-1]}</div></div>`).join('')}
+    <button class="tipbtn" data-tip="${u.id}">Teoría</button></div>
+    <div class="prog"><i style="width:${d/3*100}%"></i></div></article>`;
+  });
+  h+=`<p class="small" style="text-align:center;margin:18px 8px">El progreso se guarda en este navegador. El tema 4 se añadirá cuando lo deis en clase.</p>`;
+  $('#v-path').innerHTML=h;
+}
+function renderPractice(){
+  const nm=S.mist.length;
+  $('#v-practice').innerHTML=`
+  <h2 class="sec">Entrenamiento</h2>
+  <button class="pcard" id="p-blitz"><div class="ic" style="background:var(--die)">${IC.bolt}</div><div><h3>Artikel-Blitz</h3><p>60 segundos: der, das o die lo más rápido posible.</p></div><div class="meta">Récord<br><b style="font-size:18px;color:var(--ink)">${S.blitz}</b></div></button>
+  <button class="pcard" id="p-mist"><div class="ic" style="background:var(--accent)">${IC.redo}</div><div><h3>Repasar mis errores</h3><p>${nm? 'Te vuelven a salir hasta que los aciertes.':'Aún no hay errores guardados.'}</p></div><div class="meta"><b style="font-size:18px;color:var(--ink)">${nm}</b><br>pendientes</div></button>
+  <button class="pcard" id="p-exam"><div class="ic" style="background:var(--ink)">${IC.exam}</div><div><h3>Simulacro de examen</h3><p>20 preguntas mezcladas, sin vidas ni pistas. Nota sobre 10.</p></div></button>
+  <button class="pcard" id="p-num"><div class="ic" style="background:var(--accent)">${IC.hash}</div><div><h3>Números a tope</h3><p>15 números de todo tipo: del 0 al millón, años y precios.</p></div></button>
+  <button class="pcard" id="p-art"><div class="ic" style="background:var(--der)">${IC.abc}</div><div><h3>Artículos: mezcla total</h3><p>15 sustantivos de todos los temas, con plural y ein/kein.</p></div></button>
+  <h2 class="sec">Ajustes</h2>
+  <div class="settings"><button class="chip ${S.sound?'on':''}" id="s-sound">Sonidos: ${S.sound?'sí':'no'}</button><button class="chip" id="s-voice">Probar voz</button><button class="chip" id="s-goal">Meta diaria: ${S.goal} XP</button><button class="chip" id="s-reset">Borrar progreso</button></div>
+  <p class="small" style="margin-top:12px">Versión ${APP_VERSION}.</p>
+  <p class="small" style="margin-top:6px">La voz usa la del propio móvil. Si no oyes nada, instala la voz «Alemán» en los ajustes de texto a voz del teléfono.</p>`;
+}
+let dictFilter='all';
+function renderDict(){
+  const q=($('#dq')&&$('#dq').value||'').trim().toLowerCase();
+  const tags=[['all','Todo'],['t1','Tema 1'],['t2','Tema 2'],['t3','Tema 3'],['fi','Ficha'],['der','der'],['das','das'],['die','die']];
+  const list=NOUNS.filter(n=>(dictFilter==='all'||n.t===dictFilter||n.art===dictFilter) && (!q || n.de.toLowerCase().includes(q) || n.es.toLowerCase().includes(q)))
+    .sort((a,b)=>a.de.localeCompare(b.de,'de'));
+  const head = $('#dq') ? null : `<input class="search" id="dq" type="search" placeholder="Busca en alemán o en español" autocomplete="off">
+    <div class="chips" id="dchips"></div>
+    <div class="legend"><span style="background:var(--der-l);color:var(--der)">der · azul</span><span style="background:var(--das-l);color:var(--das)">das · verde</span><span style="background:var(--die-l);color:var(--die)">die · rojo</span></div>
+    <div class="count" id="dcount"></div><div id="dlist"></div>`;
+  if(head){ $('#v-dict').innerHTML=head; $('#dq').addEventListener('input',renderDict); }
+  $('#dchips').innerHTML=tags.map(([k,l])=>`<button class="chip ${dictFilter===k?'on':''}" data-f="${k}">${l}</button>`).join('');
+  $('#dcount').textContent=`${list.length} palabras · toca una para oírla`;
+  $('#dlist').innerHTML=list.map(n=>`<button class="w ${n.art}" data-say="${esc(n.art+' '+n.de)}"><span class="a">${n.art}</span><span><span class="n">${esc(n.de)}</span><br><span class="pl">${esc(plStr(n))}</span></span><span class="es">${esc(n.es)}</span></button>`).join('');
+}
+
+/* ===================== MOTOR DE LECCIONES ===================== */
+let L=null; // estado de la lección
+function startLesson(qs, o){
+  L={queue:qs.slice(),total:qs.length,done:0,hearts:5,cur:null,sel:null,checked:false,retried:new Set(),
+     right:0,answered:0,errors:[],xp:0,mode:o.mode||'lesson',unit:o.unit,level:o.level,title:o.title||'',timeEnd:0,tick:null};
+  $('#lesson').classList.add('on'); document.body.style.overflow='hidden';
+  $('#lhearts').hidden = L.mode!=='lesson';
+  $('#ltimer').hidden = L.mode!=='blitz';
+  $('#lfoot').hidden=false;
+  if(L.mode==='blitz'){ L.timeEnd=Date.now()+60000; L.tick=setInterval(blitzTick,200); blitzTick(); }
+  nextQ();
+}
+function updBar(){ const p=L.mode==='blitz'? Math.max(0,(L.timeEnd-Date.now())/60000) : L.done/L.total; $('#lbar').style.width=(p*100)+'%'; $('#lhn').textContent=L.hearts; }
+function nextQ(){
+  updBar();
+  if(L.mode!=='blitz' && (L.queue.length===0)) return endLesson();
+  if(L.mode==='blitz' && L.queue.length<3) L.queue.push(...shuffle(NOUNS).slice(0,20).map(qArticle));
+  L.cur=L.queue.shift(); L.sel=null; L.checked=false;
+  const f=$('#lfoot'); f.className='lf'; $('#fb').innerHTML='';
+  const b=$('#lcheck'); b.textContent='Comprobar'; b.disabled=true;
+  $('#lfoot').hidden = (L.cur.type==='match') || L.mode==='blitz';
+  renderQ(L.cur);
+}
+function renderQ(q){
+  const body=$('#lbody'); let h=`<div class="qt">${esc(q.title)}</div>`;
+  if(q.type==='article'){
+    h+=`<div class="wordcard" id="wc"><div class="big ${q.word.length>15?'xl':q.word.length>10?'l':''}">${esc(q.word)}</div><div class="sub">${esc(q.es)}</div><button class="spk sm" data-say="${esc(q.word)}" aria-label="Escuchar">${IC.spk}</button></div>
+        <div class="arts">${['der','das','die'].map(a=>`<button class="ab ${a}" data-a="${a}">${a}</button>`).join('')}</div>`;
+  } else {
+    if(q.listen) h+=`<div class="qprompt"><button class="spk" data-say="${esc(q.listen)}" aria-label="Escuchar" style="width:72px;height:72px;border-radius:20px">${IC.spk}</button><div class="small">Toca para escuchar el número.<br><button class="chip" id="reveal" style="margin-top:6px">No lo oigo: enséñamelo</button><span id="revealed" style="display:block;margin-top:6px;font-size:18px;color:var(--ink)"></span></div></div>`;
+    else if(q.prompt) h+=`<div class="qprompt"><div class="bubble" style="${q.big?'font-size:34px;text-align:center;font-weight:900;font-variant-numeric:tabular-nums':''}">${esc(q.prompt)}</div></div>`;
+    if(q.type==='choice') h+=`<div class="opts ${q.two||q.options.every(o=>o.length<14)?'two':''}">${q.options.map((o,i)=>`<button class="ob" data-i="${i}">${esc(o)}</button>`).join('')}</div>`;
+    if(q.type==='tiles') h+=`<div class="answer" id="ans"></div><div class="preview" id="prev"></div><div class="bank" id="bank">${q.bank.map((t,i)=>`<button class="tile" data-t="${i}">${esc(t)}</button>`).join('')}</div>`;
+    if(q.type==='input') h+=`<input class="inp" id="inp" ${q.numeric?'inputmode="numeric"':''} autocomplete="off" autocapitalize="off" spellcheck="false" placeholder="${q.numeric?'Escribe la cifra':'Escribe aquí'}">${q.numeric?'':`<div class="uml">${['ä','ö','ü','ß','Ä','Ö','Ü'].map(c=>`<button data-c="${c}">${c}</button>`).join('')}</div>`}`;
+    if(q.type==='match'){ const L1=shuffle(q.pairs.map((p,i)=>[p[0],i])), R=shuffle(q.pairs.map((p,i)=>[p[1],i]));
+      h+=`<div class="match"><div class="col">${L1.map(([t,i])=>`<button class="mb" data-side="l" data-k="${i}">${esc(t)}</button>`).join('')}</div><div class="col">${R.map(([t,i])=>`<button class="mb" data-side="r" data-k="${i}">${esc(t)}</button>`).join('')}</div></div>`;
+      q._m={l:null,r:null,left:q.pairs.length,err:0}; }
+  }
+  body.innerHTML=h; body.scrollTop=0;
+  if(q.listen) setTimeout(()=>say(q.listen),250);
+  if(q.type==='tiles'){ q._picked=[]; }
+  const inp=$('#inp'); if(inp){ inp.addEventListener('input',()=>{$('#lcheck').disabled=!inp.value.trim();}); inp.addEventListener('keydown',e=>{if(e.key==='Enter'&&inp.value.trim()) onCheck();}); setTimeout(()=>inp.focus(),60); }
+}
+function renderTiles(q){
+  const ans=$('#ans'); ans.innerHTML=q._picked.map((ti,pos)=>`<button class="tile" data-p="${pos}">${esc(q.bank[ti])}</button>`).join('');
+  $('#bank').querySelectorAll('.tile').forEach(b=>b.classList.toggle('used',q._picked.includes(+b.dataset.t)));
+  const txt=q._picked.map(i=>q.bank[i]).join(q.joiner);
+  $('#prev').innerHTML= q.joiner==='' && txt ? `Se lee: <b>${esc(txt)}</b>` : '';
+  $('#lcheck').disabled=q._picked.length===0;
+}
+function norm(s){return s.trim().replace(/\s+/g,' ').replace(/[.!?]$/,'');}
+function evaluate(q){
+  if(q.type==='article') return {ok:L.sel===q.answer};
+  if(q.type==='choice') return {ok:q.options[L.sel]===q.answer};
+  if(q.type==='tiles'){ const got=q._picked.map(i=>q.bank[i]).join(q.joiner); return {ok:got===q.answer.join(q.joiner)}; }
+  if(q.type==='input'){ let v=$('#inp').value; if(q.numeric) v=v.replace(/[.\s]/g,'');
+    const ok=q.answers.some(a=>norm(a)===norm(v)); const ci=!ok && q.answers.some(a=>norm(a).toLowerCase()===norm(v).toLowerCase());
+    return {ok, note: ci?'Casi: revisa mayúsculas y minúsculas. Sustantivo con MAYÚSCULA, artículo en minúscula.':''}; }
+}
+function onCheck(){
+  const q=L.cur, btn=$('#lcheck');
+  if(L.checked){ return nextQ(); }
+  if(btn.disabled) return;
+  const r=evaluate(q); L.checked=true; L.answered++;
+  showResult(q,r.ok,r.note);
+}
+function showResult(q,ok,note){
+  const f=$('#lfoot'), fb=$('#fb'), btn=$('#lcheck');
+  if(q.type==='article'){ document.querySelectorAll('.ab').forEach(b=>{ if(b.dataset.a!==q.answer) b.classList.add('dim'); b.disabled=true;}); $('#wc').classList.add(q.answer); }
+  if(q.type==='choice'){ document.querySelectorAll('.ob').forEach(b=>{ b.disabled=true; const o=q.options[+b.dataset.i]; if(o===q.answer) b.classList.add('right'); else if(+b.dataset.i===L.sel) b.classList.add('wrong'); }); }
+  if(q.type==='tiles') document.querySelectorAll('.tile').forEach(b=>b.disabled=true);
+  if(q.type==='input') $('#inp').disabled=true;
+  beep(ok); say(q.say);
+  if(ok){
+    L.right++; L.done++; L.xp+= (L.mode==='exam'?0:1);
+    if(L.mode==='mist') clearMistake(q);
+    f.className='lf ok';
+    fb.innerHTML=`<h4>${IC.check.replace('<svg','<svg width="24" height="24"')} ${pick(['¡Correcto!','¡Muy bien!','¡Exacto!','¡Perfecto!'])}</h4>${q.type!=='choice'||q.sol!==q.answer?`<div class="sol">${esc(q.sol)}</div>`:''}<p>${esc(q.explain||'')}</p>`;
+  } else {
+    L.errors.push(q); pushMistake(q);
+    if(L.mode==='lesson'){ L.hearts--; }
+    if((L.mode==='lesson' || L.mode==='mist') && !q._retry){ L.queue.push(Object.assign({},q,{_retry:true,bank:q.bank?shuffle(q.bank):q.bank,options:q.options?shuffle(q.options):q.options})); }
+    else L.done++;
+    f.className='lf bad';
+    fb.innerHTML=`<h4>${IC.cross.replace('<svg','<svg width="24" height="24"')} Incorrecto</h4><div class="sol">Solución: ${esc(q.sol)}</div>${note?`<p><b>${esc(note)}</b></p>`:''}<p>${esc(q.explain||'')}</p>`;
+  }
+  updBar();
+  btn.disabled=false; btn.textContent='Continuar';
+  if(L.mode==='lesson' && L.hearts<=0){ btn.textContent='Ver resultado'; L.queue=[]; L.failed=true; }
+}
+/* match */
+function onMatch(b){
+  const q=L.cur, m=q._m; if(b.classList.contains('ok')) return;
+  const side=b.dataset.side;
+  document.querySelectorAll(`.mb[data-side="${side}"]`).forEach(x=>x.classList.remove('sel'));
+  b.classList.add('sel'); m[side]=b;
+  if(side==='l'){ const t=b.textContent; if(/[A-Za-zÄÖÜäöüß]/.test(t) && /^(der|das|die) /.test(t)) say(t); }
+  else say(b.textContent);
+  if(m.l && m.r){
+    if(m.l.dataset.k===m.r.dataset.k){ [m.l,m.r].forEach(x=>{x.classList.remove('sel');x.classList.add('ok');x.disabled=true;}); m.left--; beep(true); }
+    else { const a=m.l,c=m.r; [a,c].forEach(x=>{x.classList.remove('sel');x.classList.add('no');}); setTimeout(()=>[a,c].forEach(x=>x.classList.remove('no')),400); m.err++; beep(false);
+      if(L.mode==='lesson'){ L.hearts--; updBar(); if(L.hearts<=0){ L.queue=[]; L.failed=true; return endLesson(); } } }
+    m.l=m.r=null;
+    if(m.left===0){ L.done++; L.answered++; if(!m.err) L.right++; else L.errors.push({title:q.title,prompt:'Parejas',sol:q.pairs.map(p=>p[0]+' = '+p[1]).join(' · ')});
+      L.xp+=2; setTimeout(()=>{ $('#lfoot').hidden=false; const f=$('#lfoot'); f.className='lf ok'; $('#fb').innerHTML=`<h4>${IC.check.replace('<svg','<svg width="24" height="24"')} ¡Todas las parejas!</h4><p>${m.err?`Con ${m.err} fallo${m.err>1?'s':''}.`:'Sin fallos.'}</p>`; const btn=$('#lcheck'); btn.disabled=false; btn.textContent='Continuar'; L.checked=true; updBar(); },250); }
+  }
+}
+/* blitz */
+function blitzTick(){
+  const left=Math.max(0,L.timeEnd-Date.now()); $('#ltimer').textContent=Math.ceil(left/1000)+' s'; updBar();
+  if(left<=0){ clearInterval(L.tick); endLesson(); }
+}
+function blitzAnswer(a){
+  const q=L.cur; const ok=a===q.answer; L.answered++;
+  const fl=$('#flash'); fl.style.background= ok?'rgba(19,160,90,.18)':'rgba(229,72,77,.22)'; fl.style.opacity=1; setTimeout(()=>fl.style.opacity=0,160);
+  beep(ok);
+  if(ok){ L.right++; L.xp+=1; } else { L.errors.push(q); pushMistake(q); toast(`${q.answer} ${q.word}`); }
+  nextQ();
+}
+function endLesson(){
+  if(L.tick) clearInterval(L.tick);
+  $('#lfoot').hidden=true; $('#ltimer').hidden=true;
+  const acc= L.answered? Math.round(L.right/L.answered*100):0;
+  let title='¡Lección completada!', sub='Sigue así: mañana otra.';
+  let medalColor='#ffc23d';
+  let earned=0;
+  if(L.mode==='lesson'){
+    if(L.failed){ title='Te has quedado sin vidas'; sub='Repasa la teoría de la unidad y vuelve a intentarlo.'; medalColor='#e5484d'; earned=Math.min(L.xp,5); }
+    else { earned=10+L.xp; const prev=S.done[L.unit]||0; if(L.level>prev) S.done[L.unit]=L.level; }
+  } else if(L.mode==='blitz'){
+    title=`${L.right} aciertos en 60 s`; sub= L.right>S.blitz? '¡Nuevo récord!':'Récord: '+S.blitz; if(L.right>S.blitz) S.blitz=L.right; earned=L.right;
+  } else if(L.mode==='exam'){
+    const nota=(L.right/L.total*10); title=`Nota: ${nota.toFixed(1).replace('.',',')} / 10`;
+    sub = nota>=8?'Muy bien. Ahora repasa los fallos.': nota>=5?'Aprobado, pero hay que subir. Repasa los fallos.':'Suspenso. Repasa la teoría y los fallos antes de repetir.';
+    medalColor = nota>=5?'#ffc23d':'#e5484d'; earned=Math.round(nota*3);
+  } else { earned=5+L.xp; }
+  addXP(earned);
+  const errs=L.errors.filter(e=>e.sol);
+  $('#lbody').innerHTML=`<div class="end">
+    <svg class="medal" viewBox="0 0 120 120" aria-hidden="true"><circle cx="60" cy="60" r="52" fill="${medalColor}"/><circle cx="60" cy="60" r="40" fill="#fff" opacity=".25"/><path d="m60 30 9 19 21 2-16 14 5 21-19-11-19 11 5-21-16-14 21-2z" fill="#fff"/></svg>
+    <h2>${esc(title)}</h2><p>${esc(sub)}</p>
+    <div class="kpis"><div class="kpi"><div style="background:#ffc23d">XP</div><b>+${earned}</b></div><div class="kpi"><div style="background:var(--ok)">Aciertos</div><b>${acc}%</b></div><div class="kpi"><div style="background:var(--die)">Fallos</div><b>${L.errors.length}</b></div></div>
+    ${errs.length?`<div class="errs"><h3>Repasa esto</h3>${errs.slice(0,12).map(e=>`<div class="err"><div class="q">${esc(e.prompt||e.word||e.listen||'')}</div><div class="s">${esc(e.sol)}</div></div>`).join('')}</div>`:''}
+    <button class="big-btn" id="endok" style="margin-top:14px">Continuar</button>
+    ${L.mode==='lesson'&&L.failed?`<button class="ghost" id="endretry">Reintentar</button>`:''}
+  </div>`;
+  updBar(); $('#lbar').style.width='100%';
+  save(); renderPath(); renderPractice();
+}
+function closeLesson(){ if(L&&L.tick) clearInterval(L.tick); $('#lesson').classList.remove('on'); document.body.style.overflow=''; L=null; try{speechSynthesis.cancel();}catch(e){} }
+
+/* ===================== MODOS DE PRÁCTICA ===================== */
+function examQs(){
+  const t23=NOUNS.filter(n=>n.t==='t2'||n.t==='t3'), pl=withPl(t23);
+  const qs=[ ...sample(t23,5).map(qArticle), qPlural(pick(pl)), qPlural(pick(pl)), qEin(pick(einPool(t23))), qEin(pick(einPool(t23))),
+    qNumWord(niceNum('b')), qNumTiles(niceNum('c')), qNumInput(niceNum('c')), qYear(),
+    qSH(), qVerb(pick(VERBS.slice(2)),true), qVerb(pick(VERBS.filter(v=>v.ch))),
+    qSent(pick(SENT),true), qSent(pick(SENT),true), qPrep(), qVocabInput(pick(t23)) ];
+  return shuffle(qs);
+}
+function launchUnit(id,l){ const u=UNITS.find(x=>x.id===id); startLesson(u.gen(l),{mode:'lesson',unit:id,level:l}); }
+
+/* ===================== EVENTOS ===================== */
+document.addEventListener('click',e=>{
+  const t=e.target.closest('button'); if(!t) return;
+  if(t.dataset.say){ e.stopPropagation(); say(t.dataset.say); if(!t.classList.contains('w')) return; return; }
+  if(t.classList.contains('tab')){ document.querySelectorAll('.tab').forEach(x=>x.classList.toggle('on',x===t)); document.querySelectorAll('.view').forEach(v=>v.classList.toggle('on',v.id==='v-'+t.dataset.v)); if(t.dataset.v==='dict') renderDict(); window.scrollTo(0,0); return; }
+  if(t.classList.contains('lvb')) return launchUnit(t.dataset.u,+t.dataset.l);
+  if(t.dataset.tip){ const u=UNITS.find(x=>x.id===t.dataset.tip); openSheet(`<h3>${esc(u.title)}</h3><div class="tip">${u.tip}</div><button class="big-btn" style="margin-top:14px" data-close>Entendido</button>`); return; }
+  if(t.hasAttribute('data-close')) return closeSheet();
+  if(t.dataset.f){ dictFilter=t.dataset.f; renderDict(); return; }
+  // práctica
+  if(t.id==='p-blitz') return startLesson([],{mode:'blitz'});
+  if(t.id==='p-mist'){ if(!S.mist.length) return toast('No tienes errores guardados todavía'); return startLesson(S.mist.slice(0,15).map(m=>JSON.parse(JSON.stringify(m.q))),{mode:'mist'}); }
+  if(t.id==='p-exam') return startLesson(examQs(),{mode:'exam'});
+  if(t.id==='p-num') return startLesson(shuffle([...Array.from({length:4},()=>qNumWord(niceNum(pick(['a','b','c'])))),...Array.from({length:4},()=>qNumTiles(niceNum(pick(['b','c'])))),...Array.from({length:3},()=>qNumInput(niceNum(pick(['b','c'])))),qYear(),qPrice(),qBigFacts(),qNumListen(niceNum('b'))]),{mode:'free'});
+  if(t.id==='p-art'){ const p=NOUNS; return startLesson(shuffle([...sample(p,9).map(qArticle),...sample(withPl(p),3).map(qPlural),...sample(einPool(p),3).map(qEin)]),{mode:'free'}); }
+  if(t.id==='s-sound'){ S.sound=!S.sound; save(); renderPractice(); return; }
+  if(t.id==='s-voice'){ say('Guten Tag! Der Bahnhof, das Hotel, die Brücke.'); return; }
+  if(t.id==='s-goal'){ S.goal = S.goal===50?100:S.goal===100?20:50; save(); renderPractice(); renderPath(); return; }
+  if(t.id==='s-reset'){ openSheet(`<h3>¿Borrar todo el progreso?</h3><p class="tip">Se borran XP, racha, lecciones hechas y errores guardados. No se puede deshacer.</p><button class="big-btn" id="doreset" style="background:var(--die);box-shadow:0 5px 0 var(--die-d)">Sí, borrar</button><button class="ghost" data-close>Cancelar</button>`); return; }
+  if(t.id==='doreset'){ S={xp:0,streak:0,last:'',done:{},blitz:0,mist:[],daily:{d:'',xp:0},sound:true,goal:50}; save(); closeSheet(); renderStats(); renderPath(); renderPractice(); toast('Progreso borrado'); return; }
+  // lección
+  if(!L) return;
+  if(t.id==='lx'){ if(L.mode==='blitz'||$('#endok')) return closeLesson(); openSheet(`<h3>¿Salir de la lección?</h3><p class="tip">Perderás el progreso de esta lección.</p><button class="big-btn" id="doexit">Salir</button><button class="ghost" data-close>Seguir estudiando</button>`); return; }
+  if(t.id==='doexit'){ closeSheet(); return closeLesson(); }
+  if(t.id==='endok') return closeLesson();
+  if(t.id==='endretry'){ const u=L.unit,l=L.level; closeLesson(); return launchUnit(u,l); }
+  if(t.id==='lcheck') return onCheck();
+  if(t.id==='reveal' && L.cur && L.cur.listen){ $('#revealed').textContent=L.cur.listen; t.remove(); return; }
+  const q=L.cur; if(!q || L.checked) return;
+  if(t.classList.contains('ab')){ if(L.mode==='blitz') return blitzAnswer(t.dataset.a); L.sel=t.dataset.a; document.querySelectorAll('.ab').forEach(b=>b.classList.toggle('sel',b===t)); $('#lcheck').disabled=false; return; }
+  if(t.classList.contains('ob')){ L.sel=+t.dataset.i; document.querySelectorAll('.ob').forEach(b=>b.classList.toggle('sel',b===t)); $('#lcheck').disabled=false; return; }
+  if(t.dataset.t!==undefined && t.closest('#bank')){ const i=+t.dataset.t; if(!q._picked.includes(i)){ q._picked.push(i); if(q.joiner===' ') say(q.bank[i]); renderTiles(q);} return; }
+  if(t.dataset.p!==undefined && t.closest('#ans')){ q._picked.splice(+t.dataset.p,1); renderTiles(q); return; }
+  if(t.dataset.c){ const inp=$('#inp'); const s=inp.selectionStart??inp.value.length; inp.value=inp.value.slice(0,s)+t.dataset.c+inp.value.slice(inp.selectionEnd??s); inp.focus(); inp.setSelectionRange(s+1,s+1); $('#lcheck').disabled=!inp.value.trim(); return; }
+  if(t.classList.contains('mb')) return onMatch(t);
+});
+document.addEventListener('keydown',e=>{
+  if(!L || !$('#lesson').classList.contains('on')) return;
+  if(L.mode==='blitz' && ['1','2','3'].includes(e.key)) return blitzAnswer(['der','das','die'][+e.key-1]);
+  if(e.key==='Enter' && document.activeElement && document.activeElement.id!=='inp'){ const b=$('#lcheck'); if(!b.disabled && !$('#lfoot').hidden){ e.preventDefault(); onCheck(); } }
+});
+function openSheet(html){ $('#sheetbox').innerHTML=html; $('#sheet').classList.add('on'); }
+function closeSheet(){ $('#sheet').classList.remove('on'); }
+$('#sheet').addEventListener('click',e=>{ if(e.target.id==='sheet') closeSheet(); });
+
+renderStats(); renderPath(); renderPractice();
+// App instalable y sin internet (solo cuando se sirve por https, p. ej. GitHub Pages)
+if('serviceWorker' in navigator && location.protocol==='https:'){
+  try{ navigator.serviceWorker.register('sw.js').catch(()=>{}); }catch(e){}
+}
+</script>
+</body>
+</html>
