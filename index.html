@@ -310,7 +310,7 @@ h2.sec:first-child{margin-top:4px}
 <div class="toast" id="toast"></div>
 
 <script>
-const APP_VERSION = '1.6 · 21/11/2026 · temas 1, 2 y 3 · corrección rápida';
+const APP_VERSION = '1.7 · 21/11/2026 · temas 1, 2 y 3 · aviso de navegador';
 /* ===================== DATOS ===================== */
 // [palabra, artículo, plural (null = solo singular), español, tema, regla]
 const N = [
@@ -1196,7 +1196,7 @@ function speakUtter(t,onDone){
 }
 // habla y, cuando termina, hace algo
 function sayThen(t,cb){ if(!t) return cb&&cb(); try{ speakUtter(t,()=>setTimeout(()=>cb&&cb(),250)); }catch(e){ cb&&cb(); } }
-function say(t){ if(!t) return; try{ speakUtter(t); }catch(e){ toast('Este navegador no tiene voz en alemán'); } }
+function say(t){ if(!t) return; if(!ttsOK()) return noTts(); try{ speakUtter(t); }catch(e){ noTts(); } }
 let actx=null;
 function beep(ok){
   if(!S.sound) return;
@@ -1219,10 +1219,23 @@ function browserInfo(){
   else if(/SamsungBrowser/.test(ua)){ n='Samsung Internet'; bad='Estás en el navegador de Samsung, que a menudo no deja usar el micro para esto. Ábrela en <b>Google Chrome</b>.'; }
   else if(/Firefox|FxiOS/.test(ua)){ n='Firefox'; bad='Firefox no reconoce la voz. Ábrela en <b>Google Chrome</b>.'; }
   else if(ios){ n=/CriOS/.test(ua)?'Chrome (iPhone)':'Safari (iPhone)'; if(sa) bad='En iPhone, el micro suele fallar desde el icono de la pantalla de inicio. Ábrela en <b>Safari</b>.'; }
+  else if(/HeyTapBrowser|OppoBrowser|RealmeBrowser|MiuiBrowser|XiaoMi|HuaweiBrowser|HonorBrowser|VivoBrowser|UCBrowser|YaBrowser|Quark|PHX\//.test(ua)){
+    n='navegador del móvil'; bad='Estás en el navegador que viene con el móvil, que no lee en voz alta ni deja usar el micro. Ábrela en <b>Google Chrome</b>.'; }
   else if(/EdgA|Edg\//.test(ua)) n='Edge'; else if(/OPR|Opera/.test(ua)) n='Opera'; else if(/Chrome/.test(ua)) n='Chrome';
+  if(!ttsOK() && !bad) bad='Este navegador no puede leer en voz alta. Ábrela en <b>Google Chrome</b>.';
   return {n,standalone:sa,bad};
 }
-function openInChromeHTML(){ return `<p>Enlace de la app: <b style="word-break:break-all">${esc(APP_URL)}</b></p><button class="ghost" id="copyurl">Copiar enlace</button>`; }
+function ttsOK(){ try{ return 'speechSynthesis' in window && typeof SpeechSynthesisUtterance!=='undefined'; }catch(e){ return false; } }
+// enlace que abre la app directamente en Chrome (Android)
+function chromeIntent(){ return 'intent://'+APP_URL.replace(/^https?:\/\//,'')+'#Intent;scheme=https;package=com.android.chrome;end'; }
+function openInChromeHTML(){ const and=/Android/.test(navigator.userAgent||'');
+  return `${and?`<a class="big-btn" href="${chromeIntent()}" style="display:block;text-align:center;text-decoration:none;margin:10px 0">Abrir en Chrome</a>`:''}<p>Enlace de la app: <b style="word-break:break-all">${esc(APP_URL)}</b></p><button class="ghost" id="copyurl">Copiar enlace</button><p class="small" style="margin-top:8px">Ojo: el progreso se guarda en cada navegador por separado.</p>`; }
+let ttsWarned=false;
+function noTts(){
+  if(ttsWarned) return toast('Este navegador no lee en voz alta: ábrela en Chrome');
+  ttsWarned=true; const bi=browserInfo();
+  openSheet(`<h3>🔇 Aquí no se puede oír el alemán</h3><div class="tip"><p>${bi.bad||'Este navegador no tiene la función de leer en voz alta.'}</p><p>En Chrome funcionan la voz y el micro.</p>${openInChromeHTML()}<p class="small">Si en Chrome tampoco suena: Ajustes del móvil → busca «Texto a voz» → motor de Google → instala la voz <b>Alemán (Alemania)</b>.</p></div><button class="ghost" data-close>Cerrar</button>`);
+}
 function nrm(s){ return String(s).toLowerCase().replace(/ß/g,'ss').replace(/[.,!?¿¡«»"“”„:;()]/g,' ').replace(/[-–—]/g,' ').replace(/['’]/g,'').replace(/\s+/g,' ').trim(); }
 function toks(s){ const t=nrm(s); return t? t.split(' ').map(w=>w==='dass'?'das':w) : []; }
 function lev(a,b){ const m=a.length,n=b.length; if(!m) return n; if(!n) return m; let p=Array.from({length:n+1},(_,j)=>j);
@@ -1424,7 +1437,9 @@ const IC={
 function renderPath(){
   const totalLv=UNITS.length*3, doneLv=UNITS.reduce((a,u)=>a+(S.done[u.id]||0),0);
   const dx=(S.daily.d===today()?S.daily.xp:0), pct=Math.min(1,dx/S.goal);
-  let h=`<div class="hero"><div><h1>Examen escrito: temas 2, 3 y 4</h1><p>Semana 6 · 65 % de la nota. Llevas ${doneLv} de ${totalLv} lecciones.</p></div>
+  const bi=browserInfo();
+  let h=bi.bad?`<div class="note" style="margin:0 0 12px;border:2px solid #ffd27a">⚠️ ${bi.bad}${/Android/.test(navigator.userAgent||'')?`<a class="big-btn" href="${chromeIntent()}" style="display:block;text-align:center;text-decoration:none;margin-top:10px">Abrir en Chrome</a>`:''}<button class="chip" id="copyurl" style="margin-top:8px">Copiar enlace</button></div>`:'';
+  h+=`<div class="hero"><div><h1>Examen escrito: temas 2, 3 y 4</h1><p>Semana 6 · 65 % de la nota. Llevas ${doneLv} de ${totalLv} lecciones.</p></div>
    <div class="ring" title="Meta diaria"><svg viewBox="0 0 64 64"><circle cx="32" cy="32" r="27" fill="none" stroke="#efe6d4" stroke-width="8"/><circle cx="32" cy="32" r="27" fill="none" stroke="#ff7a1a" stroke-width="8" stroke-linecap="round" stroke-dasharray="${(2*Math.PI*27).toFixed(1)}" stroke-dashoffset="${((1-pct)*2*Math.PI*27).toFixed(1)}"/></svg><b>${dx}<br><span style="font-size:10px;color:var(--muted)">/${S.goal} XP</span></b></div></div>`;
   let sec='';
   UNITS.forEach((u,ui)=>{
