@@ -310,7 +310,7 @@ h2.sec:first-child{margin-top:4px}
 <div class="toast" id="toast"></div>
 
 <script>
-const APP_VERSION = '1.4 · 21/11/2026 · temas 1, 2 y 3 · micro continuo';
+const APP_VERSION = '1.5 · 21/11/2026 · temas 1, 2 y 3 · micro continuo';
 /* ===================== DATOS ===================== */
 // [palabra, artículo, plural (null = solo singular), español, tema, regla]
 const N = [
@@ -1261,13 +1261,13 @@ function speakCheck(q,alts){
   return {ok, heard:best.heard, me:best.me, expStr:best.expStr, note, wrongArt};
 }
 function heardHTML(q,r){
-  let h=`<div class="small">Te he entendido:</div><div>«${esc(r.heard||'…')}»</div>`;
+  let h='';
   if(r.me && !r.ok && (q.sm==='sent'||q.sm==='art') && (q.read || r.me.some(Boolean))){
     // en rojo lo que falta; si la frase no estaba a la vista, lo que falta se tapa con •••
     const words=r.expStr.split(/\s+/); let k=0;
     const out=words.map(w=>{ const n=toks(w).length; const good=r.me.slice(k,k+n).every(Boolean); k+=n;
       return good?`<span class="g">${esc(w)}</span>`:`<span class="r">${q.read?esc(w):'•••'}</span>`; }).join(' ');
-    h+=`<div class="small" style="margin-top:8px">${q.read?'En rojo, lo que no he entendido:':'Lo que ya está bien:'}</div><div>${out}</div>`;
+    h+=`<div class="small">${q.read?'En rojo, lo que no he entendido:':'Lo que ya está bien:'}</div><div>${out}</div>`;
   }
   return h;
 }
@@ -1323,7 +1323,7 @@ function startSession(){
   r.onspeechstart=()=>{ if(sess===r && accepting(L&&L.cur)) setMic(true,'Te oigo…'+HF_NOTE); };
   r.onresult=e=>{ if(sess!==r) return;
     for(let i=e.resultIndex;i<e.results.length;i++){ const res=e.results[i];
-      if(!res.isFinal){ interim=res[0].transcript.trim(); if(interim && accepting(L&&L.cur)) $('#heard').innerHTML=`<div>«${esc(interim)}»</div>`; continue; }
+      if(!res.isFinal){ interim=res[0].transcript.trim(); continue; }
       if(i<=lastIdx) continue; lastIdx=i; interim='';
       const full=res[0].transcript.trim(); if(!full) continue;
       // algunos Android repiten al principio lo que ya habían entendido antes: se prueba también sin esa parte

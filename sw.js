@@ -1,6 +1,6 @@
 // Service worker: funciona sin internet y se actualiza solo.
 // IMPORTANTE: cambia VERSION en cada actualización de la app.
-const VERSION = 'v5-2026-11-21';
+const VERSION = 'v6-2026-11-21';
 const CACHE = 'deutsch-a1-' + VERSION;
 const CORE = ['./', './index.html', './manifest.webmanifest',
   './icons/icon-192.png', './icons/icon-512.png', './icons/maskable-512.png', './icons/apple-touch-icon.png'];
