@@ -310,7 +310,7 @@ h2.sec:first-child{margin-top:4px}
 <div class="toast" id="toast"></div>
 
 <script>
-const APP_VERSION = '1.5 · 21/11/2026 · temas 1, 2 y 3 · micro continuo';
+const APP_VERSION = '1.6 · 21/11/2026 · temas 1, 2 y 3 · corrección rápida';
 /* ===================== DATOS ===================== */
 // [palabra, artículo, plural (null = solo singular), español, tema, regla]
 const N = [
@@ -1314,7 +1314,7 @@ function stopSession(){ if(sess){ const r=sess; sess=null; try{ r.abort(); }catc
 function startSession(){
   if(sess||!SR) return;
   let r; try{ r=new SR(); }catch(e){ return micFail('Este navegador no deja usar el reconocimiento de voz.'); }
-  sess=r; let started=false, lastIdx=-1, lastTxt='', interim='', heard=false;
+  sess=r; let started=false, lastIdx=-1, lastTxt='', interim='', heard=false, stab=null; const handled=new Set();
   r.lang='de-DE'; r.continuous=true; r.interimResults=true; r.maxAlternatives=5;
   if(!ttsSpeaking && L && L.cur && L.cur.type==='speak' && !L.checked) setMic(true,'Encendiendo el micro…');
   const wd=setTimeout(()=>{ if(sess===r && !started){ stopSession(); micFail('El micro no se enciende en este navegador.'); } },5000);
@@ -1323,9 +1323,22 @@ function startSession(){
   r.onspeechstart=()=>{ if(sess===r && accepting(L&&L.cur)) setMic(true,'Te oigo…'+HF_NOTE); };
   r.onresult=e=>{ if(sess!==r) return;
     for(let i=e.resultIndex;i<e.results.length;i++){ const res=e.results[i];
-      if(!res.isFinal){ interim=res[0].transcript.trim(); continue; }
-      if(i<=lastIdx) continue; lastIdx=i; interim='';
+      if(!res.isFinal){
+        // corrección rápida: no se espera a que Chrome dé la frase por terminada
+        interim=res[0].transcript.trim(); const q=L&&L.cur;
+        if(interim && !handled.has(i) && accepting(q)){
+          const alts=Array.from(res).map(x=>x.transcript.trim());
+          // si ya está bien dicho, correcto al momento (los números se esperan a la cifra completa)
+          if(q.sm!=='num' && speakCheck(q,alts).ok){ handled.add(i); interim=''; clearTimeout(stab); micFails=0; speakResult(q,alts); continue; }
+          // si no, en cuanto te callas un momento (1,3 s) se corrige como un intento
+          clearTimeout(stab); const idx=i, txt=interim;
+          stab=setTimeout(()=>{ if(sess!==r||handled.has(idx)||interim!==txt) return; const q2=L&&L.cur; if(!accepting(q2)) return;
+            handled.add(idx); interim=''; speakResult(q2,[txt],true); },1300);
+        }
+        continue; }
+      if(i<=lastIdx) continue; lastIdx=i; interim=''; clearTimeout(stab);
       const full=res[0].transcript.trim(); if(!full) continue;
+      if(handled.has(i)){ lastTxt=full; heard=true; sessIdle=0; continue; } // ya corregido antes
       // algunos Android repiten al principio lo que ya habían entendido antes: se prueba también sin esa parte
       let alts=Array.from(res).map(x=>x.transcript.trim());
       if(lastTxt){ const lt=lastTxt.toLowerCase(); const cut=alts.filter(a=>a.toLowerCase().startsWith(lt) && a.length>lt.length).map(a=>a.slice(lt.length).trim());
@@ -1340,7 +1353,7 @@ function startSession(){
     const m={'network':'Sin conexión: para hablar necesitas internet.','audio-capture':'No encuentro el micrófono del móvil (¿lo está usando otra app?).','language-not-supported':'Este móvil no reconoce alemán.'}[e.error];
     micFail(m||'No ha funcionado ('+e.error+').');
   };
-  r.onend=()=>{ clearTimeout(wd); if(sess!==r) return; sess=null;
+  r.onend=()=>{ clearTimeout(wd); clearTimeout(stab); if(sess!==r) return; sess=null;
     const q=L&&L.cur;
     if(interim && accepting(q)){ const t=interim; interim=''; speakResult(q,[t]); }
     if(!handsFree||!L) return;
@@ -1350,12 +1363,12 @@ function startSession(){
   };
   try{ r.start(); }catch(e){ clearTimeout(wd); sess=null; micFail('No se ha podido encender el micro.'); }
 }
-function speakResult(q,alts){
+function speakResult(q,alts,early){
   if(!L||L.cur!==q||L.checked) return;
   const r=speakCheck(q,alts); q._tries=(q._tries||0)+1;
   $('#heard').innerHTML=heardHTML(q,r);
   if(r.ok){ L.checked=true; L.answered++; return showResult(q,true,''); }
-  if(!r.wrongArt && q._tries<3){ $('#tries').textContent=`${r.note?r.note+' ':''}Intento ${q._tries} de 3: vuelve a intentarlo.`;
+  if((!r.wrongArt || early) && q._tries<3){ $('#tries').textContent=`${r.note?r.note+' ':''}Intento ${q._tries} de 3: vuelve a intentarlo.`;
     if(handsFree) setMic(true,'Otra vez… habla ahora'+HF_NOTE); else setMic(false,'Toca el micro y habla'); return; }
   L.checked=true; L.answered++; $('#tries').textContent='';
   showResult(q,false,r.note||'');
@@ -1729,7 +1742,7 @@ function showResult(q,ok,note){
   if(q.type==='speak' && handsFree){
     // pasar sola a la siguiente cuando la app termine de hablar (se comprueba cada poco: nunca se queda parada)
     const tryAdv=()=>{ if(!L||L.cur!==q||!L.checked) return; if(ttsSpeaking) return void(L.autoT=setTimeout(tryAdv,300));
-      L.autoT=setTimeout(()=>{ if(L && L.cur===q && L.checked) nextQ(); }, ok?900:3500); };
+      L.autoT=setTimeout(()=>{ if(L && L.cur===q && L.checked) nextQ(); }, ok?500:3000); };
     L.autoT=setTimeout(tryAdv,400);
   }
   if(ok){
