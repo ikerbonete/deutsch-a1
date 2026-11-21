@@ -308,7 +308,7 @@ h2.sec:first-child{margin-top:4px}
 <div class="toast" id="toast"></div>
 
 <script>
-const APP_VERSION = '1.2 · 21/11/2026 · temas 1, 2 y 3 · más ejercicios de hablar';
+const APP_VERSION = '1.3 · 21/11/2026 · temas 1, 2 y 3 · micro siempre encendido';
 /* ===================== DATOS ===================== */
 // [palabra, artículo, plural (null = solo singular), español, tema, regla]
 const N = [
@@ -879,7 +879,7 @@ function qPlural(n){
   const w=n.de; const c=n.pl;
   const cands=uniq([w+'e',w+'en',w+'n',w+'s',w+'er',umlaut(w)+'e',umlaut(w)+'er',w, w.replace(/e$/,'')+'en']).filter(x=>x!==c && !/ee$|eer$|een$|oe$|oen$|oer$|ye$|yen$/.test(x));
   const wrong=cands.map(x=>'die '+x); if(n.art!=='die') wrong.unshift(n.art+' '+c);
-  return {type:'choice',title:'Elige el plural',prompt:`${n.art} ${n.de}`,say:`${n.art} ${n.de}`,options:opts('die '+c,wrong),answer:'die '+c,
+  return {type:'choice',title:'Elige el plural',prompt:`${n.art} ${n.de}`,deP:true,say:`${n.art} ${n.de}`,options:opts('die '+c,wrong),answer:'die '+c,
     sol:`die ${c}`,explain:'En plural el artículo es SIEMPRE die. '+pluralHint(n)};
 }
 function pluralHint(n){
@@ -896,15 +896,15 @@ function pluralHint(n){
 function qEin(n){
   const r=Math.random();
   const ein = n.art==='die'?'eine':'ein', kein=n.art==='die'?'keine':'kein';
-  if(r<.33) return {type:'choice',title:'Completa',prompt:`Das ist ___ ${n.de}.`,options:['ein','eine'],two:true,answer:ein,say:`Das ist ${ein} ${n.de}.`,
+  if(r<.33) return {type:'choice',title:'Completa',prompt:`Das ist ___ ${n.de}.`,deP:n.de,options:['ein','eine'],two:true,answer:ein,say:`Das ist ${ein} ${n.de}.`,
     sol:`Das ist ${ein} ${n.de}.`,explain:`${n.art} ${n.de} → ${ein}. der y das → ein; die → eine.`};
-  if(r<.6) return {type:'choice',title:'Niega',prompt:`Ist das ${ein} ${n.de}? – Nein, das ist ___ ${n.de}.`,options:['kein','keine','nicht','nein'],two:true,answer:kein,say:`Nein, das ist ${kein} ${n.de}.`,
+  if(r<.6) return {type:'choice',title:'Niega',prompt:`Ist das ${ein} ${n.de}? – Nein, das ist ___ ${n.de}.`,deP:`Ist das ${ein} ${n.de}?`,options:['kein','keine','nicht','nein'],two:true,answer:kein,say:`Nein, das ist ${kein} ${n.de}.`,
     sol:`Nein, das ist ${kein} ${n.de}.`,explain:`Para negar un sustantivo: kein/keine (rima con ein/eine). ${n.art} → ${kein}.`};
-  if(r<.78 && n.pl) return {type:'choice',title:'Completa',prompt:`Das sind ___ ${n.pl}. (negativo)`,options:['keine','kein','eine','nicht'],two:true,answer:'keine',say:`Das sind keine ${n.pl}.`,
+  if(r<.78 && n.pl) return {type:'choice',title:'Completa',prompt:`Das sind ___ ${n.pl}. (negativo)`,deP:n.pl,options:['keine','kein','eine','nicht'],two:true,answer:'keine',say:`Das sind keine ${n.pl}.`,
     sol:`Das sind keine ${n.pl}.`,explain:'Plural: no hay "ein", pero sí "keine" para negar.'};
   const adj=pick(['groß','schön','neu','interessant','alt','toll']);
   const D=n.art[0].toUpperCase()+n.art.slice(1);
-  return {type:'choice',title:'¿ein o der/das/die?',prompt:`Das ist ${ein} ${n.de}. ___ ${n.de} ist ${adj}.`,options:['Der','Das','Die','Ein'],two:true,answer:D,say:`${D} ${n.de} ist ${adj}.`,
+  return {type:'choice',title:'¿ein o der/das/die?',prompt:`Das ist ${ein} ${n.de}. ___ ${n.de} ist ${adj}.`,deP:`Das ist ${ein} ${n.de}.`,options:['Der','Das','Die','Ein'],two:true,answer:D,say:`${D} ${n.de} ist ${adj}.`,
     sol:`${D} ${n.de} ist ${adj}.`,explain:'Primero ein (nuevo); después der/das/die (ya conocido).'};
 }
 function qVocab(n, pool){
@@ -990,7 +990,7 @@ function qSH(){
   const base=['bin','bist','ist','sind','seid','habe','hast','hat','haben','habt'];
   const cap=/^[A-Z]/.test(a);
   const pool=base.map(x=>cap?x[0].toUpperCase()+x.slice(1):x);
-  return {type:'choice',title:'¿sein o haben?',prompt:p,options:opts(a,pool),two:true,answer:a,say:p.replace('___',a),sol:p.replace('___',a),explain:e};
+  return {type:'choice',title:'¿sein o haben?',prompt:p,deP:true,options:opts(a,pool),two:true,answer:a,say:p.replace('___',a),sol:p.replace('___',a),explain:e};
 }
 function qSent(s, withExtra){
   const bank = withExtra && s.x ? shuffle([...s.t, s.x]) : shuffle(s.t);
@@ -1000,19 +1000,19 @@ function qSent(s, withExtra){
 }
 function qPrep(){
   const [w,a,e]=pick(PREP);
-  return {type:'choice',title:'¿am, im o ins?',prompt:`___ ${w}`,options:['am','im','ins'],answer:a,say:`${a} ${w}`,sol:`${a} ${w}`,explain:e};
+  return {type:'choice',title:'¿am, im o ins?',prompt:`___ ${w}`,deP:w,options:['am','im','ins'],answer:a,say:`${a} ${w}`,sol:`${a} ${w}`,explain:e};
 }
 function qDir(){
   const [arrow,w]=pick(DIRS); const verb=pick(['Gehen','Fahren']);
   return {type:'choice',title:'Indica el camino',prompt:`${verb} Sie ___!  ${arrow}`,options:['rechts','links','geradeaus'],answer:w,say:`${verb} Sie ${w}!`,sol:`${verb} Sie ${w}!`,
     explain:'rechts = derecha →, links = izquierda ←, geradeaus = recto ↑. Imperativo con Sie: verbo + Sie.'};
 }
-function qT1(){ const it=pick(T1); return {type:'choice',title:'Tema 1',prompt:it.p,options:shuffle(it.o),answer:it.a,say:it.p.includes('___')?it.p.replace('___',it.a):it.a,sol:it.a,explain:it.e}; }
+function qT1(){ const it=pick(T1); return {type:'choice',title:'Tema 1',prompt:it.p,deP:/[¿¡áéíóúñ«]|^(Saludo|Despedida|Al irse|Formal)/.test(it.p)?false:true,options:shuffle(it.o),answer:it.a,say:it.p.includes('___')?it.p.replace('___',it.a):it.a,sol:it.a,explain:it.e}; }
 // ---- Hablar (sm = forma de corregir: art, sent, num, ans · strict = sin perdonar letras)
 function spk(o){ return Object.assign({type:'speak',sm:'sent'},o); }
-function qSpeakArt(n){ return spk({sm:'art',title:'Dilo con su artículo',prompt:n.de,big:true,hint:n.es,expect:`${n.art} ${n.de}`,say:`${n.art} ${n.de}`,sol:`${n.art} ${n.de} · ${plStr(n)}`,explain:ruleText(n)}); }
+function qSpeakArt(n){ return spk({sm:'art',title:'Dilo con su artículo',prompt:n.de,big:true,listenFirst:n.de,hint:n.es,expect:`${n.art} ${n.de}`,say:`${n.art} ${n.de}`,sol:`${n.art} ${n.de} · ${plStr(n)}`,explain:ruleText(n)}); }
 function qSpeakVoc(n){ return spk({sm:'art',title:'Dilo en alemán (con artículo)',prompt:`«${n.es}»`,expect:`${n.art} ${n.de}`,say:`${n.art} ${n.de}`,sol:`${n.art} ${n.de} · ${plStr(n)}`,explain:ruleText(n)}); }
-function qSpeakPl(n){ return spk({title:'Di el plural',prompt:`${n.art} ${n.de}`,expect:`die ${n.pl}`,say:`die ${n.pl}`,sol:`die ${n.pl}`,explain:'En plural el artículo es SIEMPRE die. '+pluralHint(n)}); }
+function qSpeakPl(n){ return spk({title:'Di el plural',prompt:`${n.art} ${n.de}`,listenFirst:`${n.art} ${n.de}`,expect:`die ${n.pl}`,say:`die ${n.pl}`,sol:`die ${n.pl}`,explain:'En plural el artículo es SIEMPRE die. '+pluralHint(n)}); }
 function qSpeakNum(n,year){ const w=year? yearTok(n).join('') : numDe(n);
   return spk({sm:'num',num:n,words:w,title:year?'Di el año en voz alta':'Di el número en voz alta',prompt:year?String(n):fmt(n),big:true,say:w,sol:`${year?n:fmt(n)} = ${w}`,
     explain: year? (n<2000?'Años antes de 2000: en centenas (neunzehnhundert…).':'Desde 2000: zweitausend…') : numExplain(n)}); }
@@ -1023,18 +1023,18 @@ function qSpeakAns(it){ return spk({sm:'ans',title:'Responde en alemán',prompt:
 function qSpeakSitu(it){ return spk({title:'¿Qué dices?',prompt:it.es,expect:it.de,alt:it.alt,say:it.de,sol:it.de+(it.alt?' (también: '+it.alt.join(' / ')+')':''),explain:'Frases de todos los días: apréndetelas enteras.'}); }
 function qSpeakAsk(it){ return spk({title:'Haz tú la pregunta',prompt:it.es,expect:it.de,alt:it.alt,say:it.de,sol:it.de,explain:'Pregunta W: palabra W + verbo + sujeto. Pregunta sí/no: verbo primero. Formal: Sie + infinitivo.'}); }
 function qSpeakVerb(v){ const P=pick(PERSONS), ans=conj(v)[P.i];
-  return spk({strict:true,title:`Conjuga en voz alta: ${v.inf}`,prompt:`${P.p}${P.h?` (${P.h})`:''} + ${v.inf}`,hint:v.es,expect:`${P.p} ${ans}`,say:`${P.p} ${ans}`,sol:`${P.p} ${ans}`,explain:verbRule(v,P.i)}); }
+  return spk({strict:true,title:`Conjuga en voz alta: ${v.inf}`,prompt:`${P.p}${P.h?` (${P.h})`:''} + ${v.inf}`,listenFirst:v.inf,hint:v.es,expect:`${P.p} ${ans}`,say:`${P.p} ${ans}`,sol:`${P.p} ${ans}`,explain:verbRule(v,P.i)}); }
 function qSpeakEin(n,neg){ const ein=n.art==='die'?'eine':'ein', kein=n.art==='die'?'keine':'kein';
-  if(!neg) return spk({strict:true,title:'Dilo completo: ¿ein o eine?',prompt:`Das ist ___ ${n.de}.`,hint:n.es,expect:`Das ist ${ein} ${n.de}.`,say:`Das ist ${ein} ${n.de}.`,sol:`Das ist ${ein} ${n.de}.`,explain:`${n.art} ${n.de} → ${ein}. der y das → ein; die → eine.`});
-  if(n.pl && Math.random()<.3) return spk({strict:true,title:'Contesta que no (plural)',prompt:`Sind das ${n.pl}? – Nein, …`,hint:n.es,expect:`Nein, das sind keine ${n.pl}.`,say:`Nein, das sind keine ${n.pl}.`,sol:`Nein, das sind keine ${n.pl}.`,explain:'En plural se niega con keine.'});
-  return spk({strict:true,title:'Contesta que no',prompt:`Ist das ${ein} ${n.de}? – Nein, …`,hint:n.es,expect:`Nein, das ist ${kein} ${n.de}.`,say:`Nein, das ist ${kein} ${n.de}.`,sol:`Nein, das ist ${kein} ${n.de}.`,explain:`${n.art} ${n.de} → ${kein}. kein/keine niega sustantivos (rima con ein/eine).`}); }
-function qSpeakPrep(){ const [w,a,e]=pick(PREP); return spk({strict:true,title:'Dilo con am, im o ins',prompt:`___ ${w}`,expect:`${a} ${w}`,say:`${a} ${w}`,sol:`${a} ${w}`,explain:e}); }
+  if(!neg) return spk({strict:true,title:'Dilo completo: ¿ein o eine?',prompt:`Das ist ___ ${n.de}.`,listenFirst:n.de,hint:n.es,expect:`Das ist ${ein} ${n.de}.`,say:`Das ist ${ein} ${n.de}.`,sol:`Das ist ${ein} ${n.de}.`,explain:`${n.art} ${n.de} → ${ein}. der y das → ein; die → eine.`});
+  if(n.pl && Math.random()<.3) return spk({strict:true,title:'Contesta que no (plural)',prompt:`Sind das ${n.pl}? – Nein, …`,listenFirst:`Sind das ${n.pl}?`,hint:n.es,expect:`Nein, das sind keine ${n.pl}.`,say:`Nein, das sind keine ${n.pl}.`,sol:`Nein, das sind keine ${n.pl}.`,explain:'En plural se niega con keine.'});
+  return spk({strict:true,title:'Contesta que no',prompt:`Ist das ${ein} ${n.de}? – Nein, …`,listenFirst:`Ist das ${ein} ${n.de}?`,hint:n.es,expect:`Nein, das ist ${kein} ${n.de}.`,say:`Nein, das ist ${kein} ${n.de}.`,sol:`Nein, das ist ${kein} ${n.de}.`,explain:`${n.art} ${n.de} → ${kein}. kein/keine niega sustantivos (rima con ein/eine).`}); }
+function qSpeakPrep(){ const [w,a,e]=pick(PREP); return spk({strict:true,title:'Dilo con am, im o ins',prompt:`___ ${w}`,listenFirst:w,expect:`${a} ${w}`,say:`${a} ${w}`,sol:`${a} ${w}`,explain:e}); }
 function qSpeakDay(){ const i=randInt(0,6), r=Math.random();
-  if(r<.4) return spk({strict:true,title:'¿Qué día va después?',prompt:`${DAYS[i]} → ?`,big:true,expect:DAYS[(i+1)%7],say:DAYS[(i+1)%7],sol:DAYS[(i+1)%7],explain:'Montag, Dienstag, Mittwoch, Donnerstag, Freitag, Samstag, Sonntag.'});
+  if(r<.4) return spk({strict:true,title:'¿Qué día va después?',prompt:`${DAYS[i]} → ?`,big:true,listenFirst:DAYS[i],expect:DAYS[(i+1)%7],say:DAYS[(i+1)%7],sol:DAYS[(i+1)%7],explain:'Montag, Dienstag, Mittwoch, Donnerstag, Freitag, Samstag, Sonntag.'});
   if(r<.7) return spk({strict:true,title:'¿Cuándo? Di am + día',prompt:`Wann? → «${DAYS_ES[i]}»`,expect:`am ${DAYS[i]}`,say:`am ${DAYS[i]}`,sol:`am ${DAYS[i]}`,explain:'Días con am: am Montag, am Freitag.'});
   return spk({sm:'art',title:'Di el día con su artículo',prompt:`«${DAYS_ES[i]}»`,expect:`der ${DAYS[i]}`,say:`der ${DAYS[i]}`,sol:`der ${DAYS[i]}`,explain:'Todos los días de la semana son der.'}); }
 function qSpeakMonth(){ const i=randInt(0,11), r=Math.random();
-  if(r<.35) return spk({strict:true,title:'¿Qué mes va después?',prompt:`${MONTHS[i]} → ?`,big:true,expect:MONTHS[(i+1)%12],say:MONTHS[(i+1)%12],sol:MONTHS[(i+1)%12],explain:MONTHS.join(', ')+'.'});
+  if(r<.35) return spk({strict:true,title:'¿Qué mes va después?',prompt:`${MONTHS[i]} → ?`,big:true,listenFirst:MONTHS[i],expect:MONTHS[(i+1)%12],say:MONTHS[(i+1)%12],sol:MONTHS[(i+1)%12],explain:MONTHS.join(', ')+'.'});
   if(r<.7) return spk({strict:true,title:'¿Cuándo? Di im + mes',prompt:`Wann? → «en ${MONTHS_ES[i]}»`,expect:`im ${MONTHS[i]}`,say:`im ${MONTHS[i]}`,sol:`im ${MONTHS[i]}`,explain:'Meses con im: im Januar, im Mai.'});
   return spk({sm:'art',title:'Di el mes con su artículo',prompt:`«${MONTHS_ES[i]}»`,expect:`der ${MONTHS[i]}`,say:`der ${MONTHS[i]}`,sol:`der ${MONTHS[i]}`,explain:'Todos los meses son der.'}); }
 const shortPh = () => PHRASES.filter(s=>s.t[0].split(' ').length<=4);
@@ -1184,7 +1184,13 @@ function clearMistake(q){ const key=q.title+'|'+(q.prompt||q.word||q.listen); co
 let voice=null;
 function pickVoice(){ try{ const vs=speechSynthesis.getVoices(); voice=vs.find(v=>/^de(-|_)DE/i.test(v.lang))||vs.find(v=>/^de/i.test(v.lang))||null; }catch(e){} }
 try{ pickVoice(); speechSynthesis.onvoiceschanged=pickVoice; }catch(e){}
+let sayTok=0;
+function sayThen(t,cb){ const tok=++sayTok; let fired=false; const go=()=>{ if(fired||tok!==sayTok) return; fired=true; if(cb) cb(); };
+  try{ if(!t) return go(); speechSynthesis.cancel(); const u=new SpeechSynthesisUtterance(t.replace(/___/g,'')); u.lang='de-DE'; if(voice) u.voice=voice; u.rate=.88;
+    u.onend=()=>setTimeout(go,250); u.onerror=()=>setTimeout(go,250); speechSynthesis.speak(u); setTimeout(go,1800+t.length*110); }
+  catch(e){ go(); } }
 function say(t){
+  sayTok++;
   try{ if(!t) return; speechSynthesis.cancel(); const u=new SpeechSynthesisUtterance(t.replace(/___/g,'')); u.lang='de-DE'; if(voice) u.voice=voice; u.rate=.88; speechSynthesis.speak(u); }
   catch(e){ toast('Este navegador no tiene voz en alemán'); }
 }
@@ -1270,7 +1276,7 @@ function noSpeech(){
   openSheet(`<h3>Este navegador no reconoce la voz</h3><div class="tip"><p>${bi.bad||'Para hablar a la app, ábrela con <b>Google Chrome</b> (Android) o <b>Safari</b> (iPhone).'}</p>${openInChromeHTML()}<p>Mientras tanto puedes hacer los ejercicios de hablar <b>escribiendo</b>, o con el <b>micro del teclado</b> 🎤 (el de Google o Samsung también entiende alemán si lo añades como idioma).</p></div><button class="big-btn" style="margin-top:14px" data-close>Entendido</button>`);
 }
 function micFail(msg){
-  micFails++; const bi=browserInfo();
+  micFails++; handsFree=false; const bi=browserInfo();
   setMic(false, `${msg}${bi.bad?'<br>'+bi.bad:''}<br><button class="chip" id="mictest" style="margin-top:6px">Probar el micrófono</button>`);
   showKb();
 }
@@ -1284,10 +1290,28 @@ async function askMicPermission(){
     if(!st) return 'timeout'; st.getTracks().forEach(t=>t.stop()); return true; }
   catch(e){ return e.name||'error'; }
 }
+// ---- Micro siempre encendido: se toca una vez y escucha solo en cada pregunta hasta que lo pausas
+let handsFree=false, emptyListens=0;
+const HF_NOTE='<br><span class="small">🎙️ Micro siempre encendido · tócalo para pausar</span>';
+function micTap(){
+  const q=L&&L.cur; if(!q||q.type!=='speak'||L.checked) return;
+  if(handsFree){ handsFree=false; stopRec(); return setMic(false,'Micro en pausa. Tócalo para encenderlo otra vez.'); }
+  handsFree=true; emptyListens=0; speakStart();
+}
+// empieza a escuchar sola (solo si el micro está en modo siempre encendido y nadie más está hablando)
+function autoListen(q){ if(!handsFree||!L||L.cur!==q||L.checked||rec) return; speakStart(); }
+// cuando no ha oído nada: vuelve a escuchar unas cuantas veces y luego se pausa
+function emptyListen(q,msg){
+  emptyListens++;
+  if(handsFree && emptyListens<4 && L && L.cur===q && !L.checked){ setMic(true,'Te escucho… habla ahora'+HF_NOTE); return setTimeout(()=>autoListen(q),300); }
+  micFails++;
+  if(handsFree){ handsFree=false; msg+=' Micro en pausa: tócalo para seguir.'; }
+  setMic(false,msg); if(micFails>=2) showKb();
+}
 function speakStart(){
   const q=L&&L.cur; if(!q||q.type!=='speak'||L.checked) return;
-  if(!SR){ showKb(); return noSpeech(); }
-  if(rec){ try{ rec.stop(); }catch(e){} setMic(true,'Un momento…'); return; } // segundo toque: termina y corrige lo oído
+  if(!SR){ handsFree=false; showKb(); return noSpeech(); }
+  if(rec) return;
   if(navigator.onLine===false) return micFail('Sin conexión: para hablar necesitas internet.');
   try{ speechSynthesis.cancel(); }catch(e){}
   let r; try{ r=new SR(); }catch(e){ return micFail('Este navegador no deja usar el reconocimiento de voz.'); }
@@ -1295,11 +1319,11 @@ function speakStart(){
   r.lang='de-DE'; r.interimResults=true; r.maxAlternatives=5; r.continuous=false;
   setMic(true,'Encendiendo el micro…');
   const wd1=setTimeout(()=>{ if(rec===r && !started){ done=true; stopRec(); micFail('El micro no se enciende en este navegador.'); } },5000);
-  const finish=alts=>{ if(done) return; done=true; clearTimeout(wd1); clearTimeout(wd2); if(rec===r) rec=null; try{ r.abort(); }catch(e){} setMic(false,''); micFails=0; speakResult(q,alts); };
-  r.onstart=()=>{ started=true; if(rec!==r) return; setMic(true,'Te escucho… habla ahora<br><span class="small">(toca otra vez el micro cuando termines)</span>');
+  const finish=alts=>{ if(done) return; done=true; clearTimeout(wd1); clearTimeout(wd2); if(rec===r) rec=null; try{ r.abort(); }catch(e){} setMic(handsFree,''); micFails=0; emptyListens=0; speakResult(q,alts); };
+  r.onstart=()=>{ started=true; if(rec!==r) return; setMic(true,'Te escucho… habla ahora'+HF_NOTE);
     wd2=setTimeout(()=>{ if(rec===r){ try{ r.stop(); }catch(e){} } },12000); };
   r.onaudiostart=()=>{ started=true; };
-  r.onspeechstart=()=>{ if(rec===r) setMic(true,'Te oigo…'); };
+  r.onspeechstart=()=>{ if(rec===r) setMic(true,'Te oigo…'+HF_NOTE); };
   r.onresult=e=>{ if(rec!==r||done) return; let fin=null, cur='';
     for(let i=0;i<e.results.length;i++){ const res=e.results[i]; if(res.isFinal) fin=res; else cur+=res[0].transcript; }
     if(fin) return finish(Array.from(fin).map(x=>x.transcript));
@@ -1307,14 +1331,14 @@ function speakStart(){
   r.onerror=e=>{ if(rec!==r||done) return; clearTimeout(wd1); clearTimeout(wd2);
     if(interim && (e.error==='no-speech'||e.error==='aborted')) return finish([interim]);
     rec=null; done=true;
+    if(e.error==='no-speech') return emptyListen(q,'No te he oído. Toca el micro y habla un poco más alto.');
     if(e.error==='not-allowed'||e.error==='service-not-allowed'){ micFail('El micro no tiene permiso.'); return permSheet(); }
-    const m={'no-speech':'No te he oído. Toca el micro y habla un poco más alto.','network':'Sin conexión: para hablar necesitas internet.','audio-capture':'No encuentro el micrófono del móvil (¿lo está usando otra app?).','language-not-supported':'Este móvil no reconoce alemán.','aborted':'Se ha cortado. Vuelve a tocar el micro.'}[e.error];
-    if(e.error==='no-speech'){ micFails++; setMic(false,m); if(micFails>=2) showKb(); return; }
+    const m={'network':'Sin conexión: para hablar necesitas internet.','audio-capture':'No encuentro el micrófono del móvil (¿lo está usando otra app?).','language-not-supported':'Este móvil no reconoce alemán.','aborted':'Se ha cortado. Vuelve a tocar el micro.'}[e.error];
     micFail((m||'No ha funcionado ('+e.error+').'));
   };
   r.onend=()=>{ clearTimeout(wd1); clearTimeout(wd2); if(done||rec!==r) return;
     if(interim) return finish([interim]);
-    rec=null; done=true; micFails++; setMic(false,'No te he oído. Toca el micro y vuelve a intentarlo.'); if(micFails>=2) showKb(); };
+    rec=null; done=true; emptyListen(q,'No te he oído. Toca el micro y vuelve a intentarlo.'); };
   try{ r.start(); }catch(e){ clearTimeout(wd1); rec=null; done=true; micFail('No se ha podido encender el micro.'); }
 }
 function speakResult(q,alts){
@@ -1322,7 +1346,8 @@ function speakResult(q,alts){
   const r=speakCheck(q,alts); q._tries=(q._tries||0)+1;
   $('#heard').innerHTML=heardHTML(q,r);
   if(r.ok){ L.checked=true; L.answered++; return showResult(q,true,''); }
-  if(!r.wrongArt && q._tries<3){ beep(false); $('#tries').textContent=`${r.note?r.note+' ':''}Intento ${q._tries} de 3: vuelve a intentarlo.`; setMic(false,'Toca el micro y habla'); return; }
+  if(!r.wrongArt && q._tries<3){ beep(false); $('#tries').textContent=`${r.note?r.note+' ':''}Intento ${q._tries} de 3: vuelve a intentarlo.`;
+    if(handsFree){ setMic(true,'Otra vez… habla ahora'+HF_NOTE); setTimeout(()=>autoListen(q),900); } else setMic(false,'Toca el micro y habla'); return; }
   L.checked=true; L.answered++; $('#tries').textContent='';
   showResult(q,false,r.note||'');
 }
@@ -1603,7 +1628,7 @@ function startLesson(qs, o){
 }
 function updBar(){ const p=L.mode==='blitz'? Math.max(0,(L.timeEnd-Date.now())/60000) : L.done/L.total; $('#lbar').style.width=(p*100)+'%'; }
 function nextQ(){
-  stopRec(); updBar();
+  stopRec(); clearTimeout(L.autoT); updBar();
   if(L.mode!=='blitz' && (L.queue.length===0)) return endLesson();
   if(L.mode==='blitz' && L.queue.length<3) L.queue.push(...shuffle(NOUNS).slice(0,20).map(qArticle));
   L.cur=L.queue.shift(); L.sel=null; L.checked=false;
@@ -1628,6 +1653,7 @@ function renderQ(q){
     h+=`<div class="micwrap"><button class="mic" id="mic" aria-label="Hablar">${IC.mic}</button>
       <div class="micst" id="micst">${SR?'Toca el micro y habla':'Este navegador no reconoce la voz. Usa Chrome.'}</div>
       <div class="heard" id="heard"></div><div class="tries" id="tries"></div>
+      <button class="chip hearbtn" data-say="${esc(q.say)}">🔊 No sé decirlo: escúchalo</button>
       <button class="chip" id="kbbtn" ${SR?'':'hidden'}>⌨️ ¿No va el micro? Escribe o dicta con el teclado</button>
       <div id="kbbox" style="width:100%" ${SR?'hidden':''}><p class="small" style="margin:4px 0 6px;text-align:center">Escríbelo, o toca el 🎤 de tu teclado y díctalo.</p>
         <input class="inp" id="kbinp" lang="de" autocomplete="off" autocapitalize="sentences" spellcheck="false" placeholder="Escribe aquí en alemán">
@@ -1635,7 +1661,7 @@ function renderQ(q){
         <button class="ghost" id="kbok">Comprobar lo escrito</button></div></div>`;
   } else {
     if(q.listen) h+=`<div class="qprompt"><button class="spk" data-say="${esc(q.listen)}" aria-label="Escuchar" style="width:72px;height:72px;border-radius:20px">${IC.spk}</button><div class="small">Toca para escuchar el número.<br><button class="chip" id="reveal" style="margin-top:6px">No lo oigo: enséñamelo</button><span id="revealed" style="display:block;margin-top:6px;font-size:18px;color:var(--ink)"></span></div></div>`;
-    else if(q.prompt) h+=`<div class="qprompt"><div class="bubble" style="${q.big?'font-size:34px;text-align:center;font-weight:900;font-variant-numeric:tabular-nums':''}">${esc(q.prompt)}</div></div>`;
+    else if(q.prompt) h+=`<div class="qprompt"><div class="bubble" style="${q.big?'font-size:34px;text-align:center;font-weight:900;font-variant-numeric:tabular-nums':''}">${esc(q.prompt)}</div>${q.deP?`<button class="spk" data-say="${esc(q.deP===true?q.prompt:q.deP)}" aria-label="Escuchar">${IC.spk}</button>`:''}</div>`;
     if(q.type==='choice') h+=`<div class="opts ${q.two||q.options.every(o=>o.length<14)?'two':''}">${q.options.map((o,i)=>`<button class="ob" data-i="${i}">${esc(o)}</button>`).join('')}</div>`;
     if(q.type==='tiles') h+=`<div class="answer" id="ans"></div><div class="preview" id="prev"></div><div class="bank" id="bank">${q.bank.map((t,i)=>`<button class="tile" data-t="${i}">${esc(t)}</button>`).join('')}</div>`;
     if(q.type==='input') h+=`<input class="inp" id="inp" ${q.numeric?'inputmode="numeric"':''} autocomplete="off" autocapitalize="off" spellcheck="false" placeholder="${q.numeric?'Escribe la cifra':'Escribe aquí'}">${q.numeric?'':`<div class="uml">${['ä','ö','ü','ß','Ä','Ö','Ü'].map(c=>`<button data-c="${c}">${c}</button>`).join('')}</div>`}`;
@@ -1645,7 +1671,12 @@ function renderQ(q){
   }
   body.innerHTML=h; body.scrollTop=0;
   if(q.listen) setTimeout(()=>say(q.listen),250);
-  if(q.autoSay) setTimeout(()=>say(typeof q.autoSay==='string'?q.autoSay:q.prompt),250);
+  if(q.type==='speak'){
+    const as = q.autoSay ? (typeof q.autoSay==='string'?q.autoSay:q.prompt) : '';
+    if(as) setTimeout(()=>sayThen(as,()=>autoListen(q)),250);
+    else if(handsFree) setTimeout(()=>autoListen(q),450);
+    if(handsFree) setMic(true,'Preparando el micro…'+HF_NOTE);
+  } else if(q.autoSay) setTimeout(()=>say(typeof q.autoSay==='string'?q.autoSay:q.prompt),250);
   const kb=$('#kbinp'); if(kb) kb.addEventListener('keydown',e=>{ if(e.key==='Enter'){ e.preventDefault(); kbSubmit(); } });
   if(q.type==='tiles'){ q._picked=[]; }
   const inp=$('#inp'); if(inp){ inp.addEventListener('input',()=>{$('#lcheck').disabled=!inp.value.trim();}); inp.addEventListener('keydown',e=>{if(e.key==='Enter'&&inp.value.trim()) onCheck();}); setTimeout(()=>inp.focus(),60); }
@@ -1686,7 +1717,9 @@ function showResult(q,ok,note){
   if(q.type==='choice'){ document.querySelectorAll('.ob').forEach(b=>{ b.disabled=true; const o=q.options[+b.dataset.i]; if(o===q.answer) b.classList.add('right'); else if(+b.dataset.i===L.sel) b.classList.add('wrong'); }); }
   if(q.type==='tiles') document.querySelectorAll('.tile').forEach(b=>b.disabled=true);
   if(q.type==='input') $('#inp').disabled=true;
-  beep(ok); say(q.say);
+  beep(ok);
+  if(q.type==='speak' && handsFree){ sayThen(q.say,()=>{ L.autoT=setTimeout(()=>{ if(L && L.cur===q && L.checked) nextQ(); }, ok?800:3500); }); }
+  else say(q.say);
   if(ok){
     L.right++; L.done++; L.xp+= (L.mode==='exam'?0:1);
     if(L.mode==='mist') clearMistake(q);
@@ -1701,6 +1734,7 @@ function showResult(q,ok,note){
   }
   updBar();
   btn.disabled=false; btn.textContent='Continuar';
+  if(q.type==='speak' && handsFree) fb.insertAdjacentHTML('beforeend',`<p class="small" style="margin-top:6px">🎙️ Pasa sola a la siguiente en un momento (o toca Continuar).</p>`);
 }
 /* match */
 function onMatch(b){
@@ -1758,7 +1792,7 @@ function endLesson(){
   updBar(); $('#lbar').style.width='100%';
   save(); renderPath(); renderPractice();
 }
-function closeLesson(){ stopRec(); if(L&&L.tick) clearInterval(L.tick); $('#lesson').classList.remove('on'); document.body.style.overflow=''; L=null; try{speechSynthesis.cancel();}catch(e){} }
+function closeLesson(){ stopRec(); if(L) clearTimeout(L.autoT); if(L&&L.tick) clearInterval(L.tick); $('#lesson').classList.remove('on'); document.body.style.overflow=''; L=null; try{speechSynthesis.cancel();}catch(e){} }
 
 /* ===================== MODOS DE PRÁCTICA ===================== */
 function examQs(){
@@ -1787,7 +1821,9 @@ document.addEventListener('click',e=>{
   if(e.target.closest('#wc') && !e.target.closest('button')) revealEs(); // tocar la palabra enseña la traducción
   const t=e.target.closest('button'); if(!t) return;
   if(t.id==='esbtn') return revealEs();
-  if(t.dataset.say){ e.stopPropagation(); say(t.dataset.say); if(!t.classList.contains('w')) return; return; }
+  if(t.dataset.say){ e.stopPropagation();
+    if(L && L.cur && L.cur.type==='speak' && !L.checked){ const q=L.cur; stopRec(); if(handsFree){ setMic(true,'Escucha…'+HF_NOTE); sayThen(t.dataset.say,()=>autoListen(q)); } else { setMic(false,'Toca el micro y repítelo'); say(t.dataset.say); } return; }
+    say(t.dataset.say); return; }
   if(t.classList.contains('tab')){ document.querySelectorAll('.tab').forEach(x=>x.classList.toggle('on',x===t)); document.querySelectorAll('.view').forEach(v=>v.classList.toggle('on',v.id==='v-'+t.dataset.v)); if(t.dataset.v==='dict') renderDict(); window.scrollTo(0,0); return; }
   if(t.classList.contains('lvb')) return launchUnit(t.dataset.u,+t.dataset.l);
   if(t.dataset.tip){ const u=UNITS.find(x=>x.id===t.dataset.tip); openSheet(`<h3>${esc(u.title)}</h3><div class="tip">${u.tip}</div><button class="big-btn" style="margin-top:14px" data-close>Entendido</button>`); return; }
@@ -1819,7 +1855,7 @@ document.addEventListener('click',e=>{
   if(t.id==='doexit'){ closeSheet(); return closeLesson(); }
   if(t.id==='endok') return closeLesson();
   if(t.id==='lcheck') return onCheck();
-  if(t.id==='mic') return speakStart();
+  if(t.id==='mic') return micTap();
   if(t.id==='kbbtn'){ showKb(); const i=$('#kbinp'); if(i) i.focus(); return; }
   if(t.id==='kbok') return kbSubmit();
   if(t.id==='reveal' && L.cur && L.cur.listen){ $('#revealed').textContent=L.cur.listen; t.remove(); return; }
