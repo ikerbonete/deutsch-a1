@@ -223,7 +223,9 @@ h2.sec:first-child{margin-top:4px}
 .esbtn{margin-top:10px;background:#fff;border:2px dashed #d9cfbb;border-radius:999px;padding:7px 14px;font-size:14px;color:var(--muted)}
 .wordcard .sub,.qsub{color:var(--muted);font-size:15px;margin-top:8px}
 .qsub{margin:-6px 0 10px;text-align:center}
-.hintwrap{text-align:center;margin:-4px 0 8px}
+.hintwrap{display:flex;flex-wrap:wrap;gap:8px;justify-content:center;align-items:center;margin:-4px 0 8px}
+.hintwrap .esbtn{margin-top:0}.hintwrap .qsub{margin:0;flex-basis:100%}
+.hearbtn{background:var(--der-l);border-color:#bcd3ff;color:var(--der-d);font-size:14px;padding:7px 14px}
 /* hablar */
 .micwrap{display:flex;flex-direction:column;align-items:center;gap:10px;margin:14px 0 6px}
 .mic{width:96px;height:96px;border-radius:50%;border:0;background:var(--die);color:#fff;box-shadow:0 6px 0 var(--die-d);display:grid;place-items:center;transition:transform .08s}
@@ -308,7 +310,7 @@ h2.sec:first-child{margin-top:4px}
 <div class="toast" id="toast"></div>
 
 <script>
-const APP_VERSION = '1.3 · 21/11/2026 · temas 1, 2 y 3 · micro siempre encendido';
+const APP_VERSION = '1.4 · 21/11/2026 · temas 1, 2 y 3 · micro continuo';
 /* ===================== DATOS ===================== */
 // [palabra, artículo, plural (null = solo singular), español, tema, regla]
 const N = [
@@ -1184,16 +1186,17 @@ function clearMistake(q){ const key=q.title+'|'+(q.prompt||q.word||q.listen); co
 let voice=null;
 function pickVoice(){ try{ const vs=speechSynthesis.getVoices(); voice=vs.find(v=>/^de(-|_)DE/i.test(v.lang))||vs.find(v=>/^de/i.test(v.lang))||null; }catch(e){} }
 try{ pickVoice(); speechSynthesis.onvoiceschanged=pickVoice; }catch(e){}
-let sayTok=0;
-function sayThen(t,cb){ const tok=++sayTok; let fired=false; const go=()=>{ if(fired||tok!==sayTok) return; fired=true; if(cb) cb(); };
-  try{ if(!t) return go(); speechSynthesis.cancel(); const u=new SpeechSynthesisUtterance(t.replace(/___/g,'')); u.lang='de-DE'; if(voice) u.voice=voice; u.rate=.88;
-    u.onend=()=>setTimeout(go,250); u.onerror=()=>setTimeout(go,250); speechSynthesis.speak(u); setTimeout(go,1800+t.length*110); }
-  catch(e){ go(); } }
-function say(t){
-  sayTok++;
-  try{ if(!t) return; speechSynthesis.cancel(); const u=new SpeechSynthesisUtterance(t.replace(/___/g,'')); u.lang='de-DE'; if(voice) u.voice=voice; u.rate=.88; speechSynthesis.speak(u); }
-  catch(e){ toast('Este navegador no tiene voz en alemán'); }
+let ttsId=0, ttsSpeaking=false, ttsQuietAt=0;
+function speakUtter(t,onDone){
+  const id=++ttsId; ttsSpeaking=true;
+  const end=()=>{ if(id!==ttsId||!ttsSpeaking) return; ttsSpeaking=false; ttsQuietAt=Date.now(); if(typeof hfMsg==='function') hfMsg(); if(onDone) onDone(); };
+  try{ speechSynthesis.cancel(); const u=new SpeechSynthesisUtterance(t.replace(/___/g,'')); u.lang='de-DE'; if(voice) u.voice=voice; u.rate=.88;
+    u.onend=end; u.onerror=end; speechSynthesis.speak(u); setTimeout(end,1800+t.length*110); if(typeof hfMsg==='function') hfMsg(); }
+  catch(e){ end(); throw e; }
 }
+// habla y, cuando termina, hace algo
+function sayThen(t,cb){ if(!t) return cb&&cb(); try{ speakUtter(t,()=>setTimeout(()=>cb&&cb(),250)); }catch(e){ cb&&cb(); } }
+function say(t){ if(!t) return; try{ speakUtter(t); }catch(e){ toast('Este navegador no tiene voz en alemán'); } }
 let actx=null;
 function beep(ok){
   if(!S.sound) return;
@@ -1276,7 +1279,7 @@ function noSpeech(){
   openSheet(`<h3>Este navegador no reconoce la voz</h3><div class="tip"><p>${bi.bad||'Para hablar a la app, ábrela con <b>Google Chrome</b> (Android) o <b>Safari</b> (iPhone).'}</p>${openInChromeHTML()}<p>Mientras tanto puedes hacer los ejercicios de hablar <b>escribiendo</b>, o con el <b>micro del teclado</b> 🎤 (el de Google o Samsung también entiende alemán si lo añades como idioma).</p></div><button class="big-btn" style="margin-top:14px" data-close>Entendido</button>`);
 }
 function micFail(msg){
-  micFails++; handsFree=false; const bi=browserInfo();
+  micFails++; handsFree=false; stopSession(); const bi=browserInfo();
   setMic(false, `${msg}${bi.bad?'<br>'+bi.bad:''}<br><button class="chip" id="mictest" style="margin-top:6px">Probar el micrófono</button>`);
   showKb();
 }
@@ -1290,64 +1293,70 @@ async function askMicPermission(){
     if(!st) return 'timeout'; st.getTracks().forEach(t=>t.stop()); return true; }
   catch(e){ return e.name||'error'; }
 }
-// ---- Micro siempre encendido: se toca una vez y escucha solo en cada pregunta hasta que lo pausas
-let handsFree=false, emptyListens=0;
+// ---- Micro siempre encendido: UNA sesión de escucha continua para toda la lección.
+// Chrome pita al abrir y cerrar el micro (eso no se puede quitar desde una web), así que se abre una vez
+// y se deja abierto; lo que oye mientras habla la app se ignora.
+let handsFree=false, sess=null, sessIdle=0;
 const HF_NOTE='<br><span class="small">🎙️ Micro siempre encendido · tócalo para pausar</span>';
+// ¿se puede corregir ahora lo que se oiga? (no mientras habla la app ni justo después)
+function accepting(q){ return !!(handsFree && L && q && L.cur===q && q.type==='speak' && !L.checked && !ttsSpeaking && Date.now()-ttsQuietAt>1200); }
+function hfMsg(){ if(!handsFree||!L) return; const q=L.cur; if(!q||q.type!=='speak'||L.checked) return;
+  setMic(true,(ttsSpeaking?'Escucha…':'Te escucho… habla ahora')+HF_NOTE); }
 function micTap(){
   const q=L&&L.cur; if(!q||q.type!=='speak'||L.checked) return;
-  if(handsFree){ handsFree=false; stopRec(); return setMic(false,'Micro en pausa. Tócalo para encenderlo otra vez.'); }
-  handsFree=true; emptyListens=0; speakStart();
-}
-// empieza a escuchar sola (solo si el micro está en modo siempre encendido y nadie más está hablando)
-function autoListen(q){ if(!handsFree||!L||L.cur!==q||L.checked||rec) return; speakStart(); }
-// cuando no ha oído nada: vuelve a escuchar unas cuantas veces y luego se pausa
-function emptyListen(q,msg){
-  emptyListens++;
-  if(handsFree && emptyListens<4 && L && L.cur===q && !L.checked){ setMic(true,'Te escucho… habla ahora'+HF_NOTE); return setTimeout(()=>autoListen(q),300); }
-  micFails++;
-  if(handsFree){ handsFree=false; msg+=' Micro en pausa: tócalo para seguir.'; }
-  setMic(false,msg); if(micFails>=2) showKb();
-}
-function speakStart(){
-  const q=L&&L.cur; if(!q||q.type!=='speak'||L.checked) return;
-  if(!SR){ handsFree=false; showKb(); return noSpeech(); }
-  if(rec) return;
+  if(!SR){ showKb(); return noSpeech(); }
+  if(handsFree){ handsFree=false; stopSession(); return setMic(false,'Micro en pausa. Tócalo para encenderlo otra vez.'); }
   if(navigator.onLine===false) return micFail('Sin conexión: para hablar necesitas internet.');
-  try{ speechSynthesis.cancel(); }catch(e){}
+  handsFree=true; sessIdle=0; startSession();
+}
+function ensureSession(){ if(handsFree && !sess) startSession(); }
+function stopSession(){ if(sess){ const r=sess; sess=null; try{ r.abort(); }catch(e){} } }
+function startSession(){
+  if(sess||!SR) return;
   let r; try{ r=new SR(); }catch(e){ return micFail('Este navegador no deja usar el reconocimiento de voz.'); }
-  rec=r; let done=false, started=false, interim='', wd2=null;
-  r.lang='de-DE'; r.interimResults=true; r.maxAlternatives=5; r.continuous=false;
-  setMic(true,'Encendiendo el micro…');
-  const wd1=setTimeout(()=>{ if(rec===r && !started){ done=true; stopRec(); micFail('El micro no se enciende en este navegador.'); } },5000);
-  const finish=alts=>{ if(done) return; done=true; clearTimeout(wd1); clearTimeout(wd2); if(rec===r) rec=null; try{ r.abort(); }catch(e){} setMic(handsFree,''); micFails=0; emptyListens=0; speakResult(q,alts); };
-  r.onstart=()=>{ started=true; if(rec!==r) return; setMic(true,'Te escucho… habla ahora'+HF_NOTE);
-    wd2=setTimeout(()=>{ if(rec===r){ try{ r.stop(); }catch(e){} } },12000); };
+  sess=r; let started=false, lastIdx=-1, lastTxt='', interim='', heard=false;
+  r.lang='de-DE'; r.continuous=true; r.interimResults=true; r.maxAlternatives=5;
+  if(!ttsSpeaking && L && L.cur && L.cur.type==='speak' && !L.checked) setMic(true,'Encendiendo el micro…');
+  const wd=setTimeout(()=>{ if(sess===r && !started){ stopSession(); micFail('El micro no se enciende en este navegador.'); } },5000);
+  r.onstart=()=>{ started=true; clearTimeout(wd); hfMsg(); };
   r.onaudiostart=()=>{ started=true; };
-  r.onspeechstart=()=>{ if(rec===r) setMic(true,'Te oigo…'+HF_NOTE); };
-  r.onresult=e=>{ if(rec!==r||done) return; let fin=null, cur='';
-    for(let i=0;i<e.results.length;i++){ const res=e.results[i]; if(res.isFinal) fin=res; else cur+=res[0].transcript; }
-    if(fin) return finish(Array.from(fin).map(x=>x.transcript));
-    interim=cur.trim(); if(interim) $('#heard').innerHTML=`<div>«${esc(interim)}»</div>`; };
-  r.onerror=e=>{ if(rec!==r||done) return; clearTimeout(wd1); clearTimeout(wd2);
-    if(interim && (e.error==='no-speech'||e.error==='aborted')) return finish([interim]);
-    rec=null; done=true;
-    if(e.error==='no-speech') return emptyListen(q,'No te he oído. Toca el micro y habla un poco más alto.');
+  r.onspeechstart=()=>{ if(sess===r && accepting(L&&L.cur)) setMic(true,'Te oigo…'+HF_NOTE); };
+  r.onresult=e=>{ if(sess!==r) return;
+    for(let i=e.resultIndex;i<e.results.length;i++){ const res=e.results[i];
+      if(!res.isFinal){ interim=res[0].transcript.trim(); if(interim && accepting(L&&L.cur)) $('#heard').innerHTML=`<div>«${esc(interim)}»</div>`; continue; }
+      if(i<=lastIdx) continue; lastIdx=i; interim='';
+      const full=res[0].transcript.trim(); if(!full) continue;
+      // algunos Android repiten al principio lo que ya habían entendido antes: se prueba también sin esa parte
+      let alts=Array.from(res).map(x=>x.transcript.trim());
+      if(lastTxt){ const lt=lastTxt.toLowerCase(); const cut=alts.filter(a=>a.toLowerCase().startsWith(lt) && a.length>lt.length).map(a=>a.slice(lt.length).trim());
+        if(cut.length) alts=[...cut,...alts]; }
+      lastTxt=full; heard=true; sessIdle=0;
+      const q=L&&L.cur; if(accepting(q)){ micFails=0; speakResult(q,alts); }
+    } };
+  r.onerror=e=>{ if(sess!==r) return;
+    if(e.error==='no-speech'||e.error==='aborted') return; // de esto se encarga onend
+    clearTimeout(wd); sess=null;
     if(e.error==='not-allowed'||e.error==='service-not-allowed'){ micFail('El micro no tiene permiso.'); return permSheet(); }
-    const m={'network':'Sin conexión: para hablar necesitas internet.','audio-capture':'No encuentro el micrófono del móvil (¿lo está usando otra app?).','language-not-supported':'Este móvil no reconoce alemán.','aborted':'Se ha cortado. Vuelve a tocar el micro.'}[e.error];
-    micFail((m||'No ha funcionado ('+e.error+').'));
+    const m={'network':'Sin conexión: para hablar necesitas internet.','audio-capture':'No encuentro el micrófono del móvil (¿lo está usando otra app?).','language-not-supported':'Este móvil no reconoce alemán.'}[e.error];
+    micFail(m||'No ha funcionado ('+e.error+').');
   };
-  r.onend=()=>{ clearTimeout(wd1); clearTimeout(wd2); if(done||rec!==r) return;
-    if(interim) return finish([interim]);
-    rec=null; done=true; emptyListen(q,'No te he oído. Toca el micro y vuelve a intentarlo.'); };
-  try{ r.start(); }catch(e){ clearTimeout(wd1); rec=null; done=true; micFail('No se ha podido encender el micro.'); }
+  r.onend=()=>{ clearTimeout(wd); if(sess!==r) return; sess=null;
+    const q=L&&L.cur;
+    if(interim && accepting(q)){ const t=interim; interim=''; speakResult(q,[t]); }
+    if(!handsFree||!L) return;
+    if(!heard) sessIdle++;
+    if(sessIdle>=4){ handsFree=false; micFails++; setMic(false,'Hace rato que no te oigo. Micro en pausa: tócalo para seguir.'); if(micFails>=2) showKb(); return; }
+    setTimeout(()=>{ if(handsFree && L && !sess) startSession(); },250); // Chrome lo ha cerrado solo: se vuelve a abrir
+  };
+  try{ r.start(); }catch(e){ clearTimeout(wd); sess=null; micFail('No se ha podido encender el micro.'); }
 }
 function speakResult(q,alts){
   if(!L||L.cur!==q||L.checked) return;
   const r=speakCheck(q,alts); q._tries=(q._tries||0)+1;
   $('#heard').innerHTML=heardHTML(q,r);
   if(r.ok){ L.checked=true; L.answered++; return showResult(q,true,''); }
-  if(!r.wrongArt && q._tries<3){ beep(false); $('#tries').textContent=`${r.note?r.note+' ':''}Intento ${q._tries} de 3: vuelve a intentarlo.`;
-    if(handsFree){ setMic(true,'Otra vez… habla ahora'+HF_NOTE); setTimeout(()=>autoListen(q),900); } else setMic(false,'Toca el micro y habla'); return; }
+  if(!r.wrongArt && q._tries<3){ $('#tries').textContent=`${r.note?r.note+' ':''}Intento ${q._tries} de 3: vuelve a intentarlo.`;
+    if(handsFree) setMic(true,'Otra vez… habla ahora'+HF_NOTE); else setMic(false,'Toca el micro y habla'); return; }
   L.checked=true; L.answered++; $('#tries').textContent='';
   showResult(q,false,r.note||'');
 }
@@ -1649,11 +1658,10 @@ function renderQ(q){
         <div class="arts">${['der','das','die'].map(a=>`<button class="ab ${a}" data-a="${a}">${a}</button>`).join('')}</div>`;
   } else if(q.type==='speak'){
     h+=`<div class="qprompt"><div class="bubble" style="${q.big?'font-size:34px;text-align:center;font-weight:900;font-variant-numeric:tabular-nums':''}">${esc(q.prompt)}</div>${q.listenFirst?`<button class="spk" data-say="${esc(q.listenFirst)}" aria-label="Escuchar">${IC.spk}</button>`:''}</div>`;
-    if(q.hint) h+=`<div class="hintwrap">${esHide(q.hint,q.hintLabel,'qsub')}</div>`;
+    h+=`<div class="hintwrap"><button class="chip hearbtn" data-say="${esc(q.say)}">🔊 No sé decirlo: escúchalo</button>${q.hint?esHide(q.hint,q.hintLabel,'qsub'):''}</div>`;
     h+=`<div class="micwrap"><button class="mic" id="mic" aria-label="Hablar">${IC.mic}</button>
       <div class="micst" id="micst">${SR?'Toca el micro y habla':'Este navegador no reconoce la voz. Usa Chrome.'}</div>
       <div class="heard" id="heard"></div><div class="tries" id="tries"></div>
-      <button class="chip hearbtn" data-say="${esc(q.say)}">🔊 No sé decirlo: escúchalo</button>
       <button class="chip" id="kbbtn" ${SR?'':'hidden'}>⌨️ ¿No va el micro? Escribe o dicta con el teclado</button>
       <div id="kbbox" style="width:100%" ${SR?'hidden':''}><p class="small" style="margin:4px 0 6px;text-align:center">Escríbelo, o toca el 🎤 de tu teclado y díctalo.</p>
         <input class="inp" id="kbinp" lang="de" autocomplete="off" autocapitalize="sentences" spellcheck="false" placeholder="Escribe aquí en alemán">
@@ -1673,9 +1681,8 @@ function renderQ(q){
   if(q.listen) setTimeout(()=>say(q.listen),250);
   if(q.type==='speak'){
     const as = q.autoSay ? (typeof q.autoSay==='string'?q.autoSay:q.prompt) : '';
-    if(as) setTimeout(()=>sayThen(as,()=>autoListen(q)),250);
-    else if(handsFree) setTimeout(()=>autoListen(q),450);
-    if(handsFree) setMic(true,'Preparando el micro…'+HF_NOTE);
+    if(handsFree){ ensureSession(); hfMsg(); }
+    if(as){ ttsQuietAt=Date.now(); setTimeout(()=>{ if(L && L.cur===q && !L.checked) say(as); },250); }
   } else if(q.autoSay) setTimeout(()=>say(typeof q.autoSay==='string'?q.autoSay:q.prompt),250);
   const kb=$('#kbinp'); if(kb) kb.addEventListener('keydown',e=>{ if(e.key==='Enter'){ e.preventDefault(); kbSubmit(); } });
   if(q.type==='tiles'){ q._picked=[]; }
@@ -1717,9 +1724,14 @@ function showResult(q,ok,note){
   if(q.type==='choice'){ document.querySelectorAll('.ob').forEach(b=>{ b.disabled=true; const o=q.options[+b.dataset.i]; if(o===q.answer) b.classList.add('right'); else if(+b.dataset.i===L.sel) b.classList.add('wrong'); }); }
   if(q.type==='tiles') document.querySelectorAll('.tile').forEach(b=>b.disabled=true);
   if(q.type==='input') $('#inp').disabled=true;
-  beep(ok);
-  if(q.type==='speak' && handsFree){ sayThen(q.say,()=>{ L.autoT=setTimeout(()=>{ if(L && L.cur===q && L.checked) nextQ(); }, ok?800:3500); }); }
-  else say(q.say);
+  if(q.type!=='speak') beep(ok);
+  say(q.say);
+  if(q.type==='speak' && handsFree){
+    // pasar sola a la siguiente cuando la app termine de hablar (se comprueba cada poco: nunca se queda parada)
+    const tryAdv=()=>{ if(!L||L.cur!==q||!L.checked) return; if(ttsSpeaking) return void(L.autoT=setTimeout(tryAdv,300));
+      L.autoT=setTimeout(()=>{ if(L && L.cur===q && L.checked) nextQ(); }, ok?900:3500); };
+    L.autoT=setTimeout(tryAdv,400);
+  }
   if(ok){
     L.right++; L.done++; L.xp+= (L.mode==='exam'?0:1);
     if(L.mode==='mist') clearMistake(q);
@@ -1765,7 +1777,7 @@ function blitzAnswer(a){
   nextQ();
 }
 function endLesson(){
-  if(L.tick) clearInterval(L.tick);
+  stopSession(); if(L.tick) clearInterval(L.tick);
   $('#lfoot').hidden=true; $('#ltimer').hidden=true;
   const acc= L.answered? Math.round(L.right/L.answered*100):0;
   let title='¡Lección completada!', sub='Sigue así: mañana otra.';
@@ -1792,7 +1804,7 @@ function endLesson(){
   updBar(); $('#lbar').style.width='100%';
   save(); renderPath(); renderPractice();
 }
-function closeLesson(){ stopRec(); if(L) clearTimeout(L.autoT); if(L&&L.tick) clearInterval(L.tick); $('#lesson').classList.remove('on'); document.body.style.overflow=''; L=null; try{speechSynthesis.cancel();}catch(e){} }
+function closeLesson(){ stopRec(); stopSession(); if(L) clearTimeout(L.autoT); if(L&&L.tick) clearInterval(L.tick); $('#lesson').classList.remove('on'); document.body.style.overflow=''; L=null; try{speechSynthesis.cancel();}catch(e){} }
 
 /* ===================== MODOS DE PRÁCTICA ===================== */
 function examQs(){
@@ -1822,7 +1834,6 @@ document.addEventListener('click',e=>{
   const t=e.target.closest('button'); if(!t) return;
   if(t.id==='esbtn') return revealEs();
   if(t.dataset.say){ e.stopPropagation();
-    if(L && L.cur && L.cur.type==='speak' && !L.checked){ const q=L.cur; stopRec(); if(handsFree){ setMic(true,'Escucha…'+HF_NOTE); sayThen(t.dataset.say,()=>autoListen(q)); } else { setMic(false,'Toca el micro y repítelo'); say(t.dataset.say); } return; }
     say(t.dataset.say); return; }
   if(t.classList.contains('tab')){ document.querySelectorAll('.tab').forEach(x=>x.classList.toggle('on',x===t)); document.querySelectorAll('.view').forEach(v=>v.classList.toggle('on',v.id==='v-'+t.dataset.v)); if(t.dataset.v==='dict') renderDict(); window.scrollTo(0,0); return; }
   if(t.classList.contains('lvb')) return launchUnit(t.dataset.u,+t.dataset.l);
@@ -1879,7 +1890,14 @@ $('#sheet').addEventListener('click',e=>{ if(e.target.id==='sheet') closeSheet()
 renderStats(); renderPath(); renderPractice(); renderTheory();
 // App instalable y sin internet (solo cuando se sirve por https, p. ej. GitHub Pages)
 if('serviceWorker' in navigator && location.protocol==='https:'){
-  try{ navigator.serviceWorker.register('sw.js').catch(()=>{}); }catch(e){}
+  try{
+    const hadCtrl=!!navigator.serviceWorker.controller; let reloaded=false;
+    navigator.serviceWorker.register('sw.js').then(reg=>{
+      document.addEventListener('visibilitychange',()=>{ if(document.visibilityState==='visible') reg.update().catch(()=>{}); });
+    }).catch(()=>{});
+    // cuando se instala una versión nueva, recargar (si no estás en mitad de una lección)
+    navigator.serviceWorker.addEventListener('controllerchange',()=>{ if(hadCtrl && !reloaded && !L){ reloaded=true; location.reload(); } });
+  }catch(e){}
 }
 </script>
 </body>
